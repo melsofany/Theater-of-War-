@@ -10,6 +10,8 @@ class_name Building
 @export var faction: Faction = null
 @export var display_name: String = "Building"
 @export var unit_scene: PackedScene
+## Unit-type key (into UnitFactory) produced by this building. Defaults to infantry.
+@export var produced_unit_key: String = "infantry"
 @export var build_time: float = 3.0
 @export var max_queue: int = 5
 
@@ -72,14 +74,18 @@ func _spawn_unit() -> void:
 		return
 	# Add to the world's unit root if reachable, else to our parent.
 	var host: Node = get_parent()
+	var w: World = null
 	while host and not (host is World):
 		host = host.get_parent()
 	if host and host is World:
-		(host as World).units_root.add_child(u)
+		w = host as World
+		w.units_root.add_child(u)
 	else:
 		get_parent().add_child(u)
 	u.faction = faction
+	if UnitFactory:
+		u.unit_type = UnitFactory.get_type(produced_unit_key)
+	u.world = w
 	u.global_position = get_spawn_point()
-	# Send the freshly built unit to the rally point.
 	u.move_to(rally_point)
 

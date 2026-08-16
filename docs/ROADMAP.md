@@ -47,10 +47,25 @@ defines the game.
 
 **Exit criteria:** data-driven world with passability + move cost; ready for Phase 3. ✅
 
-## Phase 3 — Units & Combat
+## Phase 3 — Units & Combat (complete)
 
-- Infantry, vehicles, tanks, artillery, air defense, aircraft, helicopters.
-- Health / Damage / Armor / Range / Movement model.
+- Data-driven `UnitType` resource (health, armor, damage, range, sight, speed,
+  domain GROUND/AIR, category, attack flags, indirect fire).
+- `UnitFactory` autoload: seven unit kinds — infantry, vehicle, tank, artillery,
+  air defense, aircraft, helicopter — each with tuned stats.
+- Health / Damage / Armor / Range / Movement model: `take_damage` (min 1 after
+  armor), `die` (emits `died`, deselects, hides), `heal`; auto-target
+  acquisition within sight range; cooldown-gated fire; stop-to-shoot.
+- Air domain: aircraft/helicopters fly at cruise altitude, ignore terrain
+  passability; air defense and air units can attack air; ground-only units
+  cannot hit air.
+- Artillery: long-range indirect fire.
+- Health bars above units (colour-coded, shown when damaged/selected).
+- Buildings produce typed units (`produced_unit_key`).
+- Tests: +13 (unit types, combat damage/armor/death/heal/range) ->
+  43 passing / 105 asserts.
+
+**Exit criteria:** full combat model with all seven unit categories; ready for Phase 4. ✅
 
 ## Phase 4 — Command Hierarchy
 

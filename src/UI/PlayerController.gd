@@ -32,31 +32,39 @@ func _seed_battlefield() -> void:
 		b.faction = _player_faction
 		b.global_position = Vector3(-8, world.ground_height_at(-8, 0), 0)
 		b.unit_scene = unit_scene
+		b.produced_unit_key = "infantry"
 
 	if unit_scene and world:
-		for i in 4:
+		# A mixed player force: two infantry + a tank.
+		var keys := ["infantry", "infantry", "tank"]
+		for i in keys.size():
 			var u := unit_scene.instantiate() as Unit
 			world.units_root.add_child(u)
 			u.faction = _player_faction
 			u.world = world
+			if UnitFactory:
+				u.unit_type = UnitFactory.get_type(keys[i])
 			var x := -4.0 + i * 2.0
 			u.global_position = Vector3(x, world.ground_height_at(x, 6.0), 6.0)
 			u.set_selected(false)
 
 	if unit_scene and world:
-		var e := unit_scene.instantiate() as Unit
-		world.units_root.add_child(e)
-		e.faction = _enemy_faction
-		e.world = world
-		e.global_position = Vector3(14, world.ground_height_at(14, -6.0), -6.0)
-		e.set_selected(false)
-		# Simple patrol loop for the enemy dummy (real AI is Phase 8).
-		e.patrol_points = [
-			Vector3(14, 0, -6),
-			Vector3(14, 0, 8),
-			Vector3(20, 0, 8),
-			Vector3(20, 0, -6),
-		]
+		# Enemy force: an infantry squad + an air-defense unit (to threaten air).
+		var ekeys := ["infantry", "infantry", "air_defense"]
+		for i in ekeys.size():
+			var e := unit_scene.instantiate() as Unit
+			world.units_root.add_child(e)
+			e.faction = _enemy_faction
+			e.world = world
+			if UnitFactory:
+				e.unit_type = UnitFactory.get_type(ekeys[i])
+			var x := 14.0 + i * 2.0
+			e.global_position = Vector3(x, world.ground_height_at(x, -6.0), -6.0)
+			e.set_selected(false)
+			e.patrol_points = [
+				Vector3(x, 0, -6),
+				Vector3(x, 0, 8),
+			]
 
 
 func _unhandled_input(event: InputEvent) -> void:

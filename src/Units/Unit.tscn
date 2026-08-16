@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://unitbase01"]
+[gd_scene load_steps=8 format=3 uid="uid://unitbase01"]
 
 [ext_resource type="Script" path="res://src/Units/Unit.gd" id="1_unit"]
 
@@ -18,6 +18,14 @@ outer_radius = 0.75
 albedo_color = Color(0.2, 0.4, 0.9, 1)
 roughness = 0.6
 
+[sub_resource type="PlaneMesh" id="HealthBarMesh"]
+size = Vector2(1.4, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="MatHealth"]
+albedo_color = Color(0.2, 0.9, 0.2, 1)
+shading_mode = 0
+cull_mode = 2
+
 [node name="Unit" type="CharacterBody3D"]
 script = ExtResource("1_unit")
 collision_layer = 2
@@ -36,6 +44,13 @@ shape = SubResource("CapsuleShape_1")
 visible = false
 mesh = SubResource("TorusMesh_1")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+
+[node name="HealthBar" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("HealthBarMesh")
+material_override = SubResource("MatHealth")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+cast_shadow = 0
 
 [node name="NavigationAgent" type="NavigationAgent3D" parent="."]
 radius = 0.5
