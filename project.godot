@@ -18,6 +18,7 @@ Economy="*res://src/Economy/Economy.gd"
 UnitFactory="*res://src/Units/UnitFactory.gd"
 CommandTree="*res://src/Core/CommandTree.gd"
 Logistics="*res://src/Logistics/Logistics.gd"
+Intelligence="*res://src/Intelligence/Intelligence.gd"
 
 [editor_plugins]
 

@@ -41,5 +41,8 @@ text = ""
 [node name="LogisticsLabel" type="Label" parent="VBox"]
 text = ""
 
+[node name="IntelLabel" type="Label" parent="VBox"]
+text = ""
+
 [node name="BuildingLabel" type="Label" parent="VBox"]
 text = ""

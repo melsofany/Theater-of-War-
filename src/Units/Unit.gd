@@ -47,6 +47,8 @@ var fuel_per_move: float = 0.05
 var ammo_per_shot: float = 1.0
 ## 0..1 effectiveness multiplier from supply/fuel/health; affects damage + speed.
 var readiness: float = 1.0
+## Sight range for reconnaissance / fog of war (metres).
+var sight_range: float = 25.0
 
 @onready var body_mesh: MeshInstance3D = $Body
 @onready var selection_ring: MeshInstance3D = $SelectionRing
@@ -81,6 +83,7 @@ func _apply_type() -> void:
 	fuel = max_fuel
 	fuel_per_move = unit_type.fuel_per_move
 	ammo_per_shot = unit_type.ammo_per_shot
+	sight_range = unit_type.sight_range
 	if agent:
 		agent.radius = radius
 	_update_visuals()

@@ -34,6 +34,8 @@ func _setup_economy() -> void:
 	Economy.world = world
 	Logistics.clear()
 	Logistics.world = world
+	Intelligence.clear()
+	Intelligence.world = world
 	# Starting resources for each faction.
 	Economy.register_faction(_player_faction.name,
 		{Economy.R.MANPOWER: 200.0, Economy.R.FUEL: 150.0, Economy.R.MATERIALS: 300.0})
@@ -67,6 +69,7 @@ func _build_command_tree() -> void:
 
 func _process(_delta: float) -> void:
 	_check_city_capture()
+	_apply_fog_of_war()
 
 
 func _check_city_capture() -> void:
@@ -331,3 +334,23 @@ func _select_active_command_units() -> void:
 	SelectionManager.clear(true)
 	for u in valid:
 		SelectionManager.add(u)
+
+
+func _apply_fog_of_war() -> void:
+	if not world or not Intelligence or not Intelligence.world:
+		return
+	# Hide enemy units the player cannot see (fog of war). Friendly units and
+	# buildings are always visible.
+	for u in world.get_units():
+		if u.faction == null:
+			continue
+		if u.faction.name == _player_faction.name:
+			continue  # own units always visible
+		var seen: bool = Intelligence.is_visible(_player_faction, u)
+		# Keep the unit active (it still moves/fights) but hide its visuals.
+		if u.body_mesh:
+			u.body_mesh.visible = seen
+		if u.selection_ring:
+			u.selection_ring.visible = seen and u.selected
+		if u.health_bar:
+			u.health_bar.visible = seen and (u.selected or u.health < u.max_health)

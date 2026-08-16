@@ -125,9 +125,25 @@ defines the game.
 
 **Exit criteria:** supply → transportation (range) → fuel → ammunition → readiness; ready for Phase 7. ✅
 
-## Phase 7 — Intelligence
+## Phase 7 — Intelligence (complete)
 
-- Reconnaissance → Fog of War → Intelligence Reports → Enemy Estimates.
+- `Intelligence` autoload: per-faction fog of war. Enemy unit states: VISIBLE
+  (a friendly unit within `sight_range` or a friendly building within
+  `building_vision_radius`), REMEMBERED (last-known position held for
+  `remember_seconds` sim-time then decayed), UNKNOWN.
+- `UnitType.sight_range` (recon range, already in presets 18–55).
+- API: `is_visible(faction, enemy)`, `visible_enemies_of(faction)`,
+  `last_known_position(faction, enemy)`, `enemy_estimate(faction)` (category →
+  count from sightings), `report(faction)` (human-readable summary). Sim-time
+  clock for deterministic decay.
+- Integration: target acquisition is sight-gated (units only fight what they
+  see); `PlayerController._apply_fog_of_war()` hides enemy visuals the player
+  cannot see (unit stays active). HUD `IntelLabel` shows contacts/estimates.
+- Tests: +7 (out-of-sight invisible, in-sight visible, tick records visible +
+  remembered, last-known decays, enemy estimate by category, friendlies not
+  counted, report non-empty) → 72 passing / 156 asserts.
+
+**Exit criteria:** reconnaissance → fog of war → intelligence reports → enemy estimates; ready for Phase 8. ✅
 
 ## Phase 8 — AI
 
