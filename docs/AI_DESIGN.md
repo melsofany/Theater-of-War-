@@ -71,9 +71,12 @@ Difficulty is expressed as a combination of:
 Not as stat bonuses or omniscience. Where tuning constants are needed, they are
 exposed as data, not hardcoded.
 
-## Phase 0 / Phase 1 status
+## Phase 8 status (complete)
 
-No AI behavior exists yet. The enemy unit on the map is a static dummy. The
-`AISystem` module is a stub reserving the namespace and folder. Phase 8 begins
-real implementation on top of the combat, hierarchy, logistics and intelligence
-systems delivered in Phases 3–7.
+Implemented: `AIStrategy` (pure decision logic) + `AIController` autoload
+(Strategic -> Operational -> Tactical). The AI decides on the basis of the
+fog-of-war intelligence picture (enemy estimates, visible/last-known positions),
+economy and logistics readiness — never omniscience. It issues orders as
+`move_to` calls on Unit, symmetric with player orders. See `docs/ROADMAP.md`
+Phase 8 for the detailed exit criteria. Difficulty remains information/horizon
+based, not stat bonuses.

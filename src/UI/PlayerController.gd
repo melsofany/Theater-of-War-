@@ -36,6 +36,8 @@ func _setup_economy() -> void:
 	Logistics.world = world
 	Intelligence.clear()
 	Intelligence.world = world
+	AIController.clear()
+	AIController.world = world
 	# Starting resources for each faction.
 	Economy.register_faction(_player_faction.name,
 		{Economy.R.MANPOWER: 200.0, Economy.R.FUEL: 150.0, Economy.R.MATERIALS: 300.0})

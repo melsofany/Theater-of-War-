@@ -145,10 +145,39 @@ defines the game.
 
 **Exit criteria:** reconnaissance → fog of war → intelligence reports → enemy estimates; ready for Phase 8. ✅
 
-## Phase 8 — AI
+## Phase 8 — AI (complete)
 
-- Strategic AI → Operational AI → Tactical AI.
-- Decisions based on available information.
+Three cooperating layers, mirroring military doctrine. The AI consumes the same
+fog-of-war intelligence as the player — it never reads information it could not
+have.
+
+- **`AIStrategy`** (pure, testable decision logic): given a situation snapshot
+  (own_force, enemy_force from intelligence estimates, avg_readiness, own
+  buildings, known enemy positions) returns a decision with a `Posture`
+  (OFFENSIVE / DEFENSIVE / REGROUP) and an objective:
+  - OFFENSIVE when force ratio >= 1.3 and readiness >= 0.5 -> nearest known
+    enemy position.
+  - DEFENSIVE when ratio <= 0.7 or readiness <= 0.3 -> centroid of own
+    buildings.
+  - REGROUP otherwise -> rally point.
+  Thresholds are data, not magic numbers.
+- **`AIController`** autoload (three layers):
+  - Strategic: throttled think_interval; builds the snapshot from
+    `Intelligence` (enemy estimates + visible/last-known positions), Economy and
+    Logistics readiness; asks `AIStrategy.decide`.
+  - Operational: issues `move_to` orders toward the strategic objective (with
+    formation jitter); skips units already in contact.
+  - Tactical: each tick, badly damaged units (health < 25%) retreat away from
+    the nearest visible enemy. Units otherwise auto-engage visible enemies
+    (sight-gated combat, Phase 3/7).
+- `World.get_factions()` added (derives factions from units/buildings).
+- Tests: +9 (offensive/defensive/regroup posture selection, objective = nearest
+  enemy, objective = building centroid, force-ratio computation, controller
+  snapshot+decision, tactical retreat, offensive move order) -> 82 passing /
+  171 asserts.
+
+**Exit criteria:** Strategic -> Operational -> Tactical AI deciding on available
+information; ready for Phase 9.
 
 ## Phase 9 — Espionage
 

@@ -80,6 +80,21 @@ func get_buildings() -> Array:
 	return out
 
 
+## All distinct factions present among units and buildings (AI uses this).
+func get_factions() -> Array:
+	var seen: Dictionary = {}
+	var out: Array = []
+	for u in get_units():
+		if u.faction != null and not seen.has(u.faction.name):
+			seen[u.faction.name] = true
+			out.append(u.faction)
+	for b in get_buildings():
+		if b.faction != null and not seen.has(b.faction.name):
+			seen[b.faction.name] = true
+			out.append(b.faction)
+	return out
+
+
 func get_cities() -> Array:
 	var out: Array = []
 	if features_root:

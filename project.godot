@@ -19,6 +19,7 @@ UnitFactory="*res://src/Units/UnitFactory.gd"
 CommandTree="*res://src/Core/CommandTree.gd"
 Logistics="*res://src/Logistics/Logistics.gd"
 Intelligence="*res://src/Intelligence/Intelligence.gd"
+AIController="*res://src/AI/AIController.gd"
 
 [editor_plugins]
 
