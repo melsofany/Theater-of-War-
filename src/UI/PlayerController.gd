@@ -31,6 +31,7 @@ func _seed_battlefield() -> void:
 		world.units_root.add_child(b)
 		b.faction = _player_faction
 		b.global_position = Vector3(-8, 0, 0)
+		b.unit_scene = unit_scene
 
 	if unit_scene and world:
 		for i in 4:
@@ -46,6 +47,13 @@ func _seed_battlefield() -> void:
 		e.faction = _enemy_faction
 		e.global_position = Vector3(14, 0, -6.0)
 		e.set_selected(false)
+		# Simple patrol loop for the enemy dummy (real AI is Phase 8).
+		e.patrol_points = [
+			Vector3(14, 0, -6),
+			Vector3(14, 0, 8),
+			Vector3(20, 0, 8),
+			Vector3(20, 0, -6),
+		]
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -61,21 +69,21 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		_issue_move()
 	elif event is InputEventKey and event.pressed and not event.echo:
-		_handle_control_group(event)
+		_handle_key(event)
 
 
 func _finish_drag(pos: Vector2, additive: bool) -> void:
 	var rect: Rect2 = SelectionManager.get_drag_rect()
 	if rect.size.length() < 4.0:
 		# Treat as single click.
-		var unit := _pick_unit(pos)
-		if additive and unit != null and unit.faction and unit.faction.is_player:
-			if unit in SelectionManager.selected:
-				SelectionManager.remove(unit)
+		var sel := _pick_selectable(pos)
+		if additive and sel != null and sel.faction and sel.faction.is_player:
+			if sel in SelectionManager.selected:
+				SelectionManager.remove(sel)
 			else:
-				SelectionManager.add(unit)
-		elif unit != null and unit.faction and unit.faction.is_player:
-			SelectionManager.select_single(unit)
+				SelectionManager.add(sel)
+		elif sel != null and sel.faction and sel.faction.is_player:
+			SelectionManager.select_single(sel)
 		elif not additive:
 			SelectionManager.clear()
 		return
@@ -86,7 +94,26 @@ func _finish_drag(pos: Vector2, additive: bool) -> void:
 		var sp := camera.unproject_position(u.global_position)
 		if rect.has_point(sp):
 			found.append(u)
+	# Buildings only select via single click (not box), so skip here.
 	SelectionManager.end_drag(found, additive)
+
+
+func _pick_selectable(pos: Vector2) -> Node:
+	var u := _pick_unit(pos)
+	if u != null:
+		return u
+	# Fall back to buildings.
+	var best_dist := 80.0
+	var best: Building = null
+	for b in world.get_buildings():
+		if not (b.faction and b.faction.is_player):
+			continue
+		var sp := camera.unproject_position(b.global_position)
+		var d := sp.distance_to(pos)
+		if d < best_dist:
+			best_dist = d
+			best = b
+	return best
 
 
 func _pick_unit(pos: Vector2) -> Unit:
@@ -124,13 +151,57 @@ func _spawn_move_marker(pos: Vector3) -> void:
 		m.play_at(pos)
 
 
-func _handle_control_group(event: InputEventKey) -> void:
-	# Digits 1..9 map to control groups 0..8.
+func _handle_key(event: InputEventKey) -> void:
+	# Control groups: Ctrl+1..9 assign, 1..9 select.
 	var key := event.keycode
-	if key < KEY_1 or key > KEY_9:
+	if key >= KEY_1 and key <= KEY_9:
+		var gi: int = key - KEY_1
+		if event.ctrl_pressed:
+			ControlGroupManager.assign(gi, SelectionManager.selected)
+		else:
+			ControlGroupManager.select_group(gi)
 		return
-	var gi: int = key - KEY_1
-	if event.ctrl_pressed:
-		ControlGroupManager.assign(gi, SelectionManager.selected)
-	else:
-		ControlGroupManager.select_group(gi)
+	match key:
+		KEY_B:
+			_queue_production_from_selected_building()
+		KEY_Y:
+			_set_rally_from_selected_building()
+		KEY_H:
+			_focus_camera_on_selection()
+
+
+func _get_selected_building() -> Building:
+	for b in world.get_buildings():
+		if b.selected and b.faction and b.faction.is_player:
+			return b
+	return null
+
+
+func _queue_production_from_selected_building() -> void:
+	var b := _get_selected_building()
+	if b:
+		b.queue_unit()
+
+
+func _set_rally_from_selected_building() -> void:
+	var b := _get_selected_building()
+	if not b:
+		return
+	var ground := camera.ground_point_at_screen(get_viewport().get_mouse_position())
+	b.set_rally_point(ground)
+	_spawn_move_marker(ground)
+
+
+func _focus_camera_on_selection() -> void:
+	if SelectionManager.selected.is_empty():
+		return
+	var sum := Vector3.ZERO
+	var n := 0
+	for u in SelectionManager.selected:
+		if is_instance_valid(u):
+			sum += u.global_position
+			n += 1
+	if n == 0:
+		return
+	var center := sum / float(n)
+	camera.focus_on(center)

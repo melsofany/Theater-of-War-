@@ -23,8 +23,13 @@ grow_horizontal = 0
 
 [node name="Label" type="Label" parent="VBox"]
 text = "Theater of War — Prototype
-LMB: select / box-select   RMB: move
-WASD/edges: pan   Wheel: zoom"
+LMB: select/box   RMB: move
+WASD/edges: pan   Wheel: zoom
+Ctrl+1..9: group   1..9: recall
+B: build   Y: rally   H: focus"
 
 [node name="CountLabel" type="Label" parent="VBox"]
 text = "Selected units: 0"
+
+[node name="BuildingLabel" type="Label" parent="VBox"]
+text = ""

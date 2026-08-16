@@ -4,7 +4,7 @@ A phased delivery plan. Each phase is independently shippable and builds on the
 previous. Phase 0 establishes the foundation; phases 1–10+ add the depth that
 defines the game.
 
-## Phase 0 — Project Foundation (current)
+## Phase 0 — Project Foundation (complete)
 
 - Engine decision and documentation.
 - Modular architecture (Core / World / Units / Combat / AI / Economy / Logistics
@@ -15,18 +15,21 @@ defines the game.
 - Test framework (GUT) + CI.
 - `.gitignore`, no secrets.
 
-**Exit criteria:** builds, launches, tests pass, ready for Phase 1.
+**Exit criteria:** builds, launches, tests pass, ready for Phase 1. ✅
 
-## Phase 1 — Small RTS Prototype
+## Phase 1 — Small RTS Prototype (complete)
 
-- Polished map.
-- RTS camera tuning.
-- Unit selection refinement.
-- Movement and group movement.
-- Unit grouping.
-- Building.
-- Enemy dummy behavior anchor.
-- Basic UI polish.
+- Polished map with grid overlay and clamped bounds.
+- RTS camera tuning: smooth lerp panning, edge pan, clamped zoom, focus-on.
+- Unit selection refinement: single click + box drag + additive (Shift).
+- Movement and group movement with formation spread + command markers.
+- Unit grouping: control groups Ctrl+1..9 assign / 1..9 recall.
+- Building: HQ with production queue (B), rally point (Y), spawn-on-finish.
+- Enemy dummy behavior: simple patrol loop between waypoints.
+- Basic UI polish: minimap, selection/building status panel, expanded HUD help.
+- Tests added for control groups + building production.
+
+**Exit criteria:** small, stable RTS loop; ready for Phase 2. ✅
 
 ## Phase 2 — World & Map
 

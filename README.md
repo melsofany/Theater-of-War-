@@ -12,13 +12,15 @@ Built on **Godot 4.3**. This repository is at **Phase 0 — Project Foundation**
 
 ## Status
 
-Phase 0 delivers a stable, tested, bootable foundation:
+Phases 0–1 deliver a stable, tested, bootable small-RTS foundation:
 
 - Engine chosen and documented (Godot 4.3, GDScript).
 - Modular architecture: `Core`, `World`, `Units`, `Combat`, `AI`, `Economy`,
   `Logistics`, `Intelligence`, `UI`, `Networking`, `Tools`, `Tests`.
-- Minimal playable prototype: map, RTS camera, unit selection (click +
-  box-drag), group movement, a building, an enemy dummy, HUD + main menu.
+- Playable small-RTS prototype: map, RTS camera, selection (click + box-drag +
+  additive), group movement with command markers, control groups, a building
+  (HQ) with a production queue + rally point, an enemy dummy on patrol, a
+  minimap, HUD + main menu.
 - Test framework (GUT) and headless scene validation, running in CI.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.
@@ -63,12 +65,17 @@ prototype battlefield.
 
 | Input | Action |
 | --- | --- |
-| Left mouse | Select unit / begin box-drag |
+| Left mouse | Select unit/building / begin box-drag |
 | Left mouse + Shift | Add to / toggle selection |
 | Right mouse | Move selected units |
 | W / A / S / D | Pan camera |
 | Mouse at screen edge | Pan camera |
 | Mouse wheel | Zoom |
+| Ctrl + 1..9 | Assign control group |
+| 1..9 | Recall control group |
+| B | Queue unit from selected HQ |
+| Y | Set HQ rally point at cursor |
+| H | Focus camera on current selection |
 
 ## Tests
 

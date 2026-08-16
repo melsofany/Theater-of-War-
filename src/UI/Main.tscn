@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://maintowar01"]
+[gd_scene load_steps=9 format=3 uid="uid://maintowar01"]
 
 [ext_resource type="Script" path="res://src/UI/Main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://src/World/World.tscn" id="2_world"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://src/UI/HUD.tscn" id="5_hud"]
 [ext_resource type="Script" path="res://src/UI/RTSCamera.gd" id="6_cam"]
 [ext_resource type="Script" path="res://src/UI/PlayerController.gd" id="7_pc"]
+[ext_resource type="PackedScene" path="res://src/UI/Minimap.tscn" id="8_mm"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -25,3 +26,8 @@ camera = NodePath("../Camera3D")
 world = NodePath("../World")
 
 [node name="HUD" parent="." instance=ExtResource("5_hud")]
+world = NodePath("../World")
+
+[node name="Minimap" parent="." instance=ExtResource("8_mm")]
+world = NodePath("../World")
+camera = NodePath("../Camera3D")

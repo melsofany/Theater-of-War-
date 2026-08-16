@@ -13,10 +13,15 @@ signal died(unit: Unit)
 @export var max_speed: float = 8.0
 @export var turn_speed: float = 6.0
 @export var radius: float = 0.5
+## When non-empty and the unit is AI-controlled (not a player unit), it cycles
+## through these waypoints as a simple patrol. Phase 8 replaces this with real AI.
+@export var patrol_points: Array[Vector3] = []
 
 var selected: bool = false
 var target_position: Vector3 = Vector3.ZERO
 var moving: bool = false
+var _patrol_index: int = 0
+var _patrol_wait: float = 0.0
 
 @onready var body_mesh: MeshInstance3D = $Body
 @onready var selection_ring: MeshInstance3D = $SelectionRing
@@ -28,6 +33,8 @@ func _ready() -> void:
 	_update_visuals()
 	if agent:
 		agent.radius = radius
+	if not patrol_points.is_empty():
+		_advance_patrol()
 
 
 func set_selected(value: bool) -> void:
@@ -56,6 +63,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if agent.is_navigation_finished():
 		moving = false
+		_on_arrived()
 		return
 	var next := agent.get_next_path_position()
 	var dir := (next - global_position)
@@ -74,3 +82,21 @@ func _physics_process(delta: float) -> void:
 		look.y = global_position.y
 		var target_basis := Transform3D().looking_at(look - global_position, Vector3.UP).basis
 		basis = basis.slerp(target_basis, clamp(turn_speed * delta, 0.0, 1.0))
+
+
+func _on_arrived() -> void:
+	if patrol_points.is_empty():
+		return
+	# Pause briefly at each waypoint, then advance to the next.
+	if _patrol_wait < 0.8:
+		_patrol_wait += get_physics_process_delta_time()
+		return
+	_patrol_wait = 0.0
+	_patrol_index = (_patrol_index + 1) % patrol_points.size()
+	_advance_patrol()
+
+
+func _advance_patrol() -> void:
+	if patrol_points.is_empty():
+		return
+	move_to(patrol_points[_patrol_index])

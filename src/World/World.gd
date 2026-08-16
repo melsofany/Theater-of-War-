@@ -27,6 +27,15 @@ func get_units() -> Array:
 	return out
 
 
+func get_buildings() -> Array:
+	var out: Array = []
+	if units_root:
+		for c in units_root.get_children():
+			if c is Building:
+				out.append(c)
+	return out
+
+
 func get_enemy_units_of(faction: Faction) -> Array:
 	var out: Array = []
 	for u in get_units():

@@ -82,3 +82,14 @@ func ground_point_at_screen(screen_pos: Vector2) -> Vector3:
 		return Vector3.ZERO
 	var t := -from.y / dir.y
 	return from + dir * t
+
+
+func focus_on(world_pos: Vector3) -> void:
+	# Move the camera so it looks down at world_pos, keeping its current height.
+	var np := global_position
+	np.x = world_pos.x
+	np.z = world_pos.z - (global_position.y / 0.643)  # offset from pitch (~40deg)
+	np.x = clamp(np.x, bounds.position.x, bounds.position.x + bounds.size.x)
+	np.z = clamp(np.z, bounds.position.y, bounds.position.y + bounds.size.y)
+	global_position = np
+	_velocity = Vector3.ZERO
