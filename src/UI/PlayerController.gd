@@ -30,7 +30,7 @@ func _seed_battlefield() -> void:
 		var b := building_scene.instantiate() as Building
 		world.units_root.add_child(b)
 		b.faction = _player_faction
-		b.global_position = Vector3(-8, 0, 0)
+		b.global_position = Vector3(-8, world.ground_height_at(-8, 0), 0)
 		b.unit_scene = unit_scene
 
 	if unit_scene and world:
@@ -38,14 +38,17 @@ func _seed_battlefield() -> void:
 			var u := unit_scene.instantiate() as Unit
 			world.units_root.add_child(u)
 			u.faction = _player_faction
-			u.global_position = Vector3(-4.0 + i * 2.0, 0, 6.0)
+			u.world = world
+			var x := -4.0 + i * 2.0
+			u.global_position = Vector3(x, world.ground_height_at(x, 6.0), 6.0)
 			u.set_selected(false)
 
 	if unit_scene and world:
 		var e := unit_scene.instantiate() as Unit
 		world.units_root.add_child(e)
 		e.faction = _enemy_faction
-		e.global_position = Vector3(14, 0, -6.0)
+		e.world = world
+		e.global_position = Vector3(14, world.ground_height_at(14, -6.0), -6.0)
 		e.set_selected(false)
 		# Simple patrol loop for the enemy dummy (real AI is Phase 8).
 		e.patrol_points = [

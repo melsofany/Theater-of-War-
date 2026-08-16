@@ -31,12 +31,21 @@ defines the game.
 
 **Exit criteria:** small, stable RTS loop; ready for Phase 2. ✅
 
-## Phase 2 — World & Map
+## Phase 2 — World & Map (complete)
 
-- Large maps.
-- Terrain (heightfields).
-- Cities, mountains, plateaus, rivers, roads, bridges.
-- Strategic zones / objectives.
+- Procedural heightfield terrain (layered simplex noise) rendered as an
+  `ArrayMesh` with trimesh collision.
+- Feature layers: mountains (impassable ridge), plateaus (high passable
+  ground), winding river (impassable water), roads (faster movement),
+  bridges (water crossing points).
+- Cities: named markers placed on the terrain, height-following.
+- Strategic zones: rectangular objectives rendered as translucent overlays.
+- Terrain-aware units: follow ground height, slow on costly ground, stop at
+  impassable terrain; camera picks terrain points for orders.
+- `MapData` (pure data) + `TerrainGenerator` (procedural) keep world logic
+  testable without a scene tree.
+
+**Exit criteria:** data-driven world with passability + move cost; ready for Phase 3. ✅
 
 ## Phase 3 — Units & Combat
 

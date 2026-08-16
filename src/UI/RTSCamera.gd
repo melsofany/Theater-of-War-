@@ -13,6 +13,8 @@ class_name RTSCamera
 @export var zoom_max: float = 80.0
 @export var zoom_step: float = 4.0
 @export var bounds: Rect2 = Rect2(-95, -95, 190, 190)
+## Optional world reference: when set, ground picking samples terrain height.
+var world: World = null
 
 var _velocity: Vector3 = Vector3.ZERO
 
@@ -77,11 +79,18 @@ func _zoom(amount: float) -> void:
 func ground_point_at_screen(screen_pos: Vector2) -> Vector3:
 	var from := project_ray_origin(screen_pos)
 	var dir := project_ray_normal(screen_pos)
-	# Intersect with the y = 0 plane.
+	# Intersect with a horizontal plane, then (if available) refine to terrain.
 	if abs(dir.y) < 0.0001:
 		return Vector3.ZERO
 	var t := -from.y / dir.y
-	return from + dir * t
+	var p := from + dir * t
+	if world:
+		# Iteratively adjust the plane to the terrain height under the point.
+		for i in 3:
+			var h := world.ground_height_at(p.x, p.z)
+			t = (h - from.y) / dir.y
+			p = from + dir * t
+	return p
 
 
 func focus_on(world_pos: Vector3) -> void:

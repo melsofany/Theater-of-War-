@@ -16,6 +16,9 @@ signal died(unit: Unit)
 ## When non-empty and the unit is AI-controlled (not a player unit), it cycles
 ## through these waypoints as a simple patrol. Phase 8 replaces this with real AI.
 @export var patrol_points: Array[Vector3] = []
+## Optional world reference for terrain height/move-cost sampling. If null the
+## unit moves on a flat y=0 plane (Phase 0/1 behaviour).
+var world: World = null
 
 var selected: bool = false
 var target_position: Vector3 = Vector3.ZERO
@@ -72,10 +75,17 @@ func _physics_process(delta: float) -> void:
 	if dist < 0.05:
 		return
 	dir = dir.normalized()
-	var step: float = min(max_speed * delta, dist)
+	# Terrain-aware: slow on costly ground (e.g. off-road), stop at impassable.
+	var speed := max_speed
+	if world:
+		var cost := world.move_cost_at(global_position.x, global_position.z)
+		if is_inf(cost):
+			return
+		speed = max_speed / maxf(cost, 0.0001)
+	var step: float = min(speed * delta, dist)
 	global_position += dir * step
-	# Keep on the ground plane (y = 0).
-	global_position.y = 0.0
+	# Follow the terrain height instead of a flat plane.
+	global_position.y = world.ground_height_at(global_position.x, global_position.z) if world else 0.0
 	# Face direction of travel.
 	if dir.length_squared() > 0.001:
 		var look := global_position + dir

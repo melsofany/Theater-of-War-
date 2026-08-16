@@ -1,25 +1,16 @@
-[gd_scene load_steps=4 format=3 uid="uid://worldtowar"]
+[gd_scene load_steps=5 format=3 uid="uid://worldtowar"]
 
 [ext_resource type="Script" path="res://src/World/World.gd" id="1_world"]
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_1"]
-size = Vector2(200, 200)
-
-[sub_resource type="BoxShape3D" id="BoxShape_1"]
-size = Vector3(200, 1, 200)
+[ext_resource type="PackedScene" path="res://src/World/Terrain.tscn" id="2_terrain"]
+[ext_resource type="PackedScene" path="res://src/World/City.tscn" id="3_city"]
+[ext_resource type="PackedScene" path="res://src/World/StrategicZone.tscn" id="4_zone"]
 
 [node name="World" type="Node3D"]
 script = ExtResource("1_world")
+terrain_scene = ExtResource("2_terrain")
+city_scene = ExtResource("3_city")
+zone_scene = ExtResource("4_zone")
 
-[node name="Ground" type="StaticBody3D" parent="."]
-collision_layer = 4
-collision_mask = 1
-
-[node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
-mesh = SubResource("PlaneMesh_1")
-
-[node name="GroundShape" type="CollisionShape3D" parent="Ground"]
-shape = SubResource("BoxShape_1")
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+[node name="Features" type="Node3D" parent="."]
 
 [node name="Units" type="Node3D" parent="."]
