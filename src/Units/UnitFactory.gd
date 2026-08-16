@@ -60,6 +60,62 @@ func _register(key: String, t: UnitType) -> void:
 	_types[key] = t
 
 
+## Public registration (used by the ModLoader to add data-driven unit types).
+func register(key: String, t: UnitType) -> void:
+	_register(key, t)
+
+
+## Build and register a UnitType from a plain dictionary (JSON-friendly).
+## Used by mods. Keys mirror the UnitType @export fields.
+func register_from_dict(key: String, d: Dictionary) -> UnitType:
+	var t := UnitType.new()
+	t.display_name = d.get("display_name", key)
+	t.category = _category_from_name(d.get("category", "INFANTRY"))
+	t.max_health = float(d.get("max_health", 80))
+	t.armor = float(d.get("armor", 0))
+	t.damage = float(d.get("damage", 8))
+	t.range = float(d.get("range", 18))
+	t.sight_range = float(d.get("sight_range", 30))
+	t.max_speed = float(d.get("max_speed", 7))
+	t.radius = float(d.get("radius", 0.6))
+	t.turn_speed = float(d.get("turn_speed", 4))
+	t.max_supply = float(d.get("max_supply", 100))
+	t.max_fuel = float(d.get("max_fuel", 100))
+	if d.has("indirect"):
+		t.indirect = bool(d["indirect"])
+	if d.has("can_attack_ground"):
+		t.can_attack_ground = bool(d["can_attack_ground"])
+	if d.has("can_attack_air"):
+		t.can_attack_air = bool(d["can_attack_air"])
+	if d.has("domain"):
+		t.domain = _domain_from_name(d["domain"])
+	if d.has("cruise_altitude"):
+		t.cruise_altitude = float(d["cruise_altitude"])
+	if t.domain == UnitType.Domain.AIR and not d.has("can_attack_air"):
+		t.can_attack_air = true
+	_register(key, t)
+	return t
+
+
+static func _category_from_name(n: String) -> UnitType.Category:
+	match n.to_upper():
+		"INFANTRY": return UnitType.Category.INFANTRY
+		"VEHICLE": return UnitType.Category.VEHICLE
+		"TANK": return UnitType.Category.TANK
+		"ARTILLERY": return UnitType.Category.ARTILLERY
+		"AIR_DEFENSE": return UnitType.Category.AIR_DEFENSE
+		"AIRCRAFT": return UnitType.Category.AIRCRAFT
+		"HELICOPTER": return UnitType.Category.HELICOPTER
+	return UnitType.Category.INFANTRY
+
+
+static func _domain_from_name(n: String) -> UnitType.Domain:
+	match n.to_upper():
+		"AIR": return UnitType.Domain.AIR
+		"NAVAL": return UnitType.Domain.NAVAL
+	return UnitType.Domain.GROUND
+
+
 func get_type(key: String) -> UnitType:
 	return _types.get(key, _types["infantry"])
 

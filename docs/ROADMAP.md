@@ -234,14 +234,42 @@ multiplayer, performance pass, modding, art/audio) are tracked as future work.
   is_water_at, capture cities done/not-done, eliminate enemy, hold accumulates,
   hold resets, multi-objective all-required) -> 99 passing / 202 asserts.
 
-### Future work (Phase 10b+)
+## Phase 10b — Modding, Performance, Balance, Streaming, Multiplayer, Audio (foundation complete)
 
-- Large world / streaming terrain, campaigns across multiple theaters.
-- Multiplayer (netcode, sync, host/join).
-- Performance pass (instanced rendering, spatial partitioning, LOD).
-- Modding (data-driven unit/map defs, mod loading).
-- Balance pass (combat math tuning, economy curves).
-- Art & audio (models, animations, SFX, music).
+Foundation layers for the remaining Phase 10 areas; each is bounded and tested.
+
+- **Modding** (`ModLoader` autoload): data-driven unit definitions loaded from
+  `res://mods/*.json` (and `user://mods/` at runtime) into `UnitFactory`.
+  `UnitFactory.register_from_dict` builds a `UnitType` from a JSON dictionary.
+  A `mods/sample_units.json` ships two example types (heavy_tank, frigate).
+  Adding/rebalancing units is now a data edit, not code.
+- **Performance** (`SpatialGrid`): uniform-grid spatial index over unit
+  positions; `query_radius`, `insert`, `remove`, `update` touch only overlapping
+  cells — avoids O(n²) full-list scans for proximity/nearest queries.
+- **Balance** (`Balance` autoload): tunable multipliers (damage, armor, income,
+  cost, supply/fuel consumption) + difficulty presets (easy/normal/hard). Combat
+  damage/armor read these at application; balance is a data edit.
+- **Large world / streaming** (`ChunkManager`): pure chunk-load math — given a
+  focus position and view radius, computes the active chunk set and returns
+  loaded/unloaded diffs. Streaming rendering wired in a later pass.
+- **Multiplayer** (`Networking` autoload): host/join foundation via ENet + a
+  session state machine (OFFLINE/HOSTING/CONNECTING/ONLINE). Full state
+  replication (unit sync, deterministic sim) is a later pass.
+- **Audio** (`AudioManager` autoload): play SFX/music by name from
+  `res://assets/audio/`; no-op when assets are missing so the game runs without
+  them. Asset pipeline deferred to the art pass.
+- Tests: +18 (modloader, register_from_dict incl. naval/air defaults, spatial
+  grid query/remove/update, balance defaults/scaling/presets, chunk math,
+  networking states) -> 117 passing / 252 asserts.
+
+### Future work
+
+- Streaming terrain rendering wired to ChunkManager; campaigns across theaters.
+- Multiplayer state replication (unit sync, lockstep/deterministic sim).
+- Performance: instanced rendering, LOD, SpatialGrid wired into AI/intel hot paths.
+- Modding: data-driven maps/buildings, mod loading from ZIP, mod manifest.
+- Balance pass: combat math tuning, economy curves, playtesting.
+- Art & audio: models, animations, SFX, music assets.
 
 ## Status legend
 
@@ -250,13 +278,15 @@ multiplayer, performance pass, modding, art/audio) are tracked as future work.
 | Phase | Status |
 | --- | --- |
 | 0 — Foundation | [x] |
-| 1 — Small RTS Prototype | [ ] |
-| 2 — World & Map | [ ] |
-| 3 — Units & Combat | [ ] |
-| 4 — Command Hierarchy | [ ] |
-| 5 — Economy | [ ] |
-| 6 — Logistics | [ ] |
-| 7 — Intelligence | [ ] |
-| 8 — AI | [ ] |
-| 9 — Espionage | [ ] |
-| 10+ — Air/Naval/Multiplayer/etc. | [ ] |
+| 1 — Small RTS Prototype | [x] |
+| 2 — World & Map | [x] |
+| 3 — Units & Combat | [x] |
+| 4 — Command Hierarchy | [x] |
+| 5 — Economy | [x] |
+| 6 — Logistics | [x] |
+| 7 — Intelligence | [x] |
+| 8 — AI | [x] |
+| 9 — Espionage | [x] |
+| 10 — Naval/Air/Campaign/Balance (subset) | [x] |
+| 10b — Modding/Perf/Balance/Streaming/Multiplayer/Audio (foundation) | [x] |
+| 10c+ — Streaming rendering, netcode replication, art/audio assets | [ ] |

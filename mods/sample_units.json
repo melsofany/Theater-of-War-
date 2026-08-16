@@ -1,0 +1,37 @@
+[
+	{
+		"key": "heavy_tank",
+		"display_name": "Heavy Tank",
+		"category": "TANK",
+		"domain": "GROUND",
+		"max_health": 450,
+		"armor": 18,
+		"damage": 42,
+		"range": 30,
+		"sight_range": 34,
+		"max_speed": 7,
+		"radius": 1.1,
+		"turn_speed": 2.5,
+		"max_supply": 100,
+		"max_fuel": 120,
+		"can_attack_ground": true,
+		"can_attack_air": false
+	},
+	{
+		"key": "frigate",
+		"display_name": "Frigate",
+		"category": "VEHICLE",
+		"domain": "NAVAL",
+		"max_health": 350,
+		"armor": 6,
+		"damage": 25,
+		"range": 36,
+		"sight_range": 40,
+		"max_speed": 12,
+		"radius": 0.9,
+		"turn_speed": 5.0,
+		"max_fuel": 150,
+		"can_attack_ground": true,
+		"can_attack_air": true
+	}
+]

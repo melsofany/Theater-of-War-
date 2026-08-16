@@ -279,14 +279,16 @@ func _fire(other: Unit) -> void:
 		# Out of ammo: cannot fire this tick.
 		return
 	supply = maxf(supply - ammo_per_shot, 0.0)
-	var dmg: float = unit_type.damage * compute_readiness()
+	var raw: float = unit_type.damage * compute_readiness()
+	var dmg: float = Balance.scaled_damage(raw) if Balance else raw
 	other.take_damage(dmg)
 
 
 func take_damage(amount: float) -> void:
 	if not alive:
 		return
-	var dmg := maxf(1.0, amount - armor)
+	var eff_armor: float = armor * (Balance.armor_multiplier if Balance else 1.0)
+	var dmg := maxf(1.0, amount - eff_armor)
 	health -= dmg
 	health_changed.emit(self, health)
 	_update_health_bar()
