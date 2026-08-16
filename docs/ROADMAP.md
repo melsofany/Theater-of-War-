@@ -179,10 +179,38 @@ have.
 **Exit criteria:** Strategic -> Operational -> Tactical AI deciding on available
 information; ready for Phase 9.
 
-## Phase 9 — Espionage
+## Phase 9 — Espionage (complete)
 
-- Intelligence agencies, agents, counter-intelligence, surveillance,
-  deception, information confidence.
+Builds on Phase 7 Intelligence. Agencies, agents, counter-intelligence,
+surveillance, deception and information confidence.
+
+- **`Espionage`** autoload:
+  - **Agents**: `deploy_agent(owner, target, pos)` places an agent; while active
+    it surveils — `Intelligence.reveal_from_agent` reveals real enemy units
+    within `agent_vision_radius` as medium-confidence contacts, bypassing normal
+    sight range.
+  - **Counter-intelligence**: per-faction `counter_intel` rating (0..1). Each
+    tick an enemy agent has a detection chance = `target.counter_intel *
+    detection_factor`; detected agents are neutralized (removed).
+  - **Deception**: `plant_deception(owner, victim, fake_pos, fake_type)` inserts
+    a false contact into the victim's intelligence memory (flagged internally),
+    misleading its enemy estimates and thus its AI. Looks credible (0.8
+    confidence).
+  - **Counter-intel sweep**: each tick a faction may `Intelligence.purge_deception`
+    (reveal planted false intel) with chance based on its counter-intel.
+  - **Information confidence**: contacts carry confidence (own sightings 1.0,
+    agent reports 0.6, deceptions 0.8). The AI acts on the same picture the
+    player sees, so deception can mislead it and counter-intel can reveal it.
+- `Intelligence` extended: `add_contact`, `reveal_from_agent`, `purge_deception`,
+  `has_deception`, confidence + deception flags on memory entries.
+- PlayerController sets counter-intel ratings for both factions.
+- Tests: +7 (agent reveals beyond sight, counter-intel neutralizes agent, low
+  CI keeps agent, deception plants false contact, deception flagged+purgeable,
+  confidence differs by source, counter-intel tick purges deception) -> 89
+  passing / 187 asserts.
+
+**Exit criteria:** agencies, agents, counter-intelligence, surveillance,
+deception, information confidence; ready for Phase 10.
 
 ## Phase 10 and beyond
 

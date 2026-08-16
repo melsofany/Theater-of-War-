@@ -118,7 +118,71 @@ func _remember(faction_id: String, enemy: Unit) -> void:
 		"pos": enemy.global_position,
 		"type": enemy.unit_type,
 		"time": _sim_time,
+		"confidence": 1.0,
+		"deception": false,
 	}
+
+
+## Add an externally-sourced contact (agent surveillance or a planted deception).
+## `key` is a unique id (agent id or deception id); `is_deception` marks false
+## intel planted to mislead the victim — counter-intelligence can purge it.
+func add_contact(faction: Faction, key: int, pos: Vector3, ut: UnitType,
+		confidence: float, is_deception: bool = false) -> void:
+	if faction == null:
+		return
+	if not _memory.has(faction.name):
+		_memory[faction.name] = {}
+	_memory[faction.name][key] = {
+		"pos": pos,
+		"type": ut,
+		"time": _sim_time,
+		"confidence": confidence,
+		"deception": is_deception,
+	}
+
+
+## Agent surveillance: reveal real enemy units within `radius` of `pos` to
+## `faction` as medium-confidence contacts (bypasses normal sight range).
+func reveal_from_agent(faction: Faction, pos: Vector3, radius: float,
+		confidence: float = 0.6) -> int:
+	if faction == null or world == null:
+		return 0
+	var revealed: int = 0
+	for enemy in world.get_units():
+		if enemy.faction == null or enemy.faction.name == faction.name:
+			continue
+		if not enemy.alive:
+			continue
+		if enemy.global_position.distance_to(pos) <= radius:
+			add_contact(faction, enemy.get_instance_id(), enemy.global_position,
+					enemy.unit_type, confidence, false)
+			revealed += 1
+	return revealed
+
+
+## Counter-intelligence sweep: remove deception entries from `faction`'s memory.
+## Returns the number of false contacts purged.
+func purge_deception(faction: Faction) -> int:
+	if faction == null:
+		return 0
+	var mem: Dictionary = _memory.get(faction.name, {})
+	var purged: int = 0
+	for key in mem.keys():
+		if mem[key].get("deception", false):
+			mem.erase(key)
+			purged += 1
+	return purged
+
+
+## Does `faction`'s memory contain any deception (false intel)?
+func has_deception(faction: Faction) -> bool:
+	if faction == null:
+		return false
+	var mem: Dictionary = _memory.get(faction.name, {})
+	for key in mem:
+		if mem[key].get("deception", false):
+			return true
+	return false
 
 
 ## Rough enemy strength estimate from sightings: category -> count seen.

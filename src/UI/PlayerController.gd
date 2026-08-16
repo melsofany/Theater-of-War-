@@ -38,6 +38,10 @@ func _setup_economy() -> void:
 	Intelligence.world = world
 	AIController.clear()
 	AIController.world = world
+	Espionage.clear()
+	# Counter-intel ratings (foundation values; data-driven later).
+	Espionage.set_counter_intel(_player_faction, 0.5)
+	Espionage.set_counter_intel(_enemy_faction, 0.4)
 	# Starting resources for each faction.
 	Economy.register_faction(_player_faction.name,
 		{Economy.R.MANPOWER: 200.0, Economy.R.FUEL: 150.0, Economy.R.MATERIALS: 300.0})
