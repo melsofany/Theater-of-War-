@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcmdmarker001"]
+
+[ext_resource type="Script" path="res://src/UI/CommandMarker.gd" id="1"]
+
+[node name="CommandMarker" type="Node3D"]
+script = ExtResource("1")

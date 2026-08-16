@@ -2,7 +2,8 @@ extends Node3D
 ## PlayerController
 ##
 ## Bridges mouse input to selection + movement orders. Handles single-click
-## select, box-drag multi-select and right-click move-to-ground commands.
+## select, box-drag multi-select, right-click move-to-ground commands and
+## control-group assignment/selection (Ctrl+1..9 / 1..9).
 
 class_name PlayerController
 
@@ -10,6 +11,7 @@ class_name PlayerController
 @export var building_scene: PackedScene
 @export var camera: RTSCamera
 @export var world: World
+@export var command_marker_scene: PackedScene
 
 var _player_faction: Faction
 var _enemy_faction: Faction
@@ -18,6 +20,8 @@ var _enemy_faction: Faction
 func _ready() -> void:
 	_player_faction = Faction.make("blue", "Blue Force", Color(0.2, 0.4, 0.9), ["red"], true)
 	_enemy_faction = Faction.make("red", "Red Force", Color(0.85, 0.2, 0.2), ["blue"], false)
+	if not command_marker_scene:
+		command_marker_scene = preload("res://src/UI/CommandMarker.tscn")
 	_seed_battlefield()
 
 
@@ -56,6 +60,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		SelectionManager.update_drag(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		_issue_move()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		_handle_control_group(event)
 
 
 func _finish_drag(pos: Vector2, additive: bool) -> void:
@@ -108,3 +114,23 @@ func _issue_move() -> void:
 		var col: int = i % cols
 		var sep := Vector3(float(col - cols / 2), 0, float(row - cols / 2)) * 1.5
 		(SelectionManager.selected[i] as Unit).move_to(ground + sep)
+	_spawn_move_marker(ground)
+
+
+func _spawn_move_marker(pos: Vector3) -> void:
+	if command_marker_scene and world:
+		var m := command_marker_scene.instantiate() as CommandMarker
+		world.add_child(m)
+		m.play_at(pos)
+
+
+func _handle_control_group(event: InputEventKey) -> void:
+	# Digits 1..9 map to control groups 0..8.
+	var key := event.keycode
+	if key < KEY_1 or key > KEY_9:
+		return
+	var gi: int = key - KEY_1
+	if event.ctrl_pressed:
+		ControlGroupManager.assign(gi, SelectionManager.selected)
+	else:
+		ControlGroupManager.select_group(gi)

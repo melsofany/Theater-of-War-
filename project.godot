@@ -13,6 +13,7 @@ config/icon="res://icon.svg"
 
 GameManager="*res://src/Core/GameManager.gd"
 SelectionManager="*res://src/Core/SelectionManager.gd"
+ControlGroupManager="*res://src/Core/ControlGroupManager.gd"
 
 [editor_plugins]
 
