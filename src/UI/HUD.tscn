@@ -44,5 +44,8 @@ text = ""
 [node name="IntelLabel" type="Label" parent="VBox"]
 text = ""
 
+[node name="CampaignLabel" type="Label" parent="VBox"]
+text = ""
+
 [node name="BuildingLabel" type="Label" parent="VBox"]
 text = ""

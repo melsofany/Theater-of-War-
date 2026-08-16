@@ -8,7 +8,7 @@ extends Resource
 
 class_name UnitType
 
-enum Domain { GROUND, AIR }
+enum Domain { GROUND, AIR, NAVAL }
 enum Category {
 	INFANTRY,
 	VEHICLE,
@@ -51,6 +51,10 @@ enum Category {
 
 func is_air() -> bool:
 	return domain == Domain.AIR
+
+
+func is_naval() -> bool:
+	return domain == Domain.NAVAL
 
 
 func can_attack(target_type: UnitType) -> bool:

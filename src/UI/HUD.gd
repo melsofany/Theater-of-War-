@@ -14,6 +14,7 @@ class_name HUD
 @onready var resource_label: Label = $VBox/ResourceLabel
 @onready var logistics_label: Label = $VBox/LogisticsLabel
 @onready var intel_label: Label = $VBox/IntelLabel
+@onready var campaign_label: Label = $VBox/CampaignLabel
 @onready var building_label: Label = $VBox/BuildingLabel
 
 
@@ -60,6 +61,7 @@ func _process(_delta: float) -> void:
 	_update_resources()
 	_update_logistics()
 	_update_intel()
+	_update_campaign()
 	_update_command()
 	queue_redraw()
 
@@ -85,6 +87,28 @@ func _update_intel() -> void:
 	var f := Faction.new()
 	f.name = "blue"
 	intel_label.text = Intelligence.report(f)
+
+
+func _update_campaign() -> void:
+	if not Campaign or not Campaign.world:
+		campaign_label.text = ""
+		return
+	var f := Faction.new()
+	f.name = "blue"
+	if Campaign.is_won(f):
+		campaign_label.text = "CAMPAIGN WON"
+		return
+	var e := Faction.new()
+	e.name = "red"
+	if Campaign.is_won(e):
+		campaign_label.text = "CAMPAIGN LOST"
+		return
+	var objs: Array = Campaign.objectives_for(f)
+	var done: int = 0
+	for o in objs:
+		if Campaign._objective_done(f.name, o, 0.0):
+			done += 1
+	campaign_label.text = "Objectives: %d/%d" % [done, objs.size()]
 
 
 func _update_resources() -> void:

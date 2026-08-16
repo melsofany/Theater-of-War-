@@ -42,6 +42,8 @@ func _setup_economy() -> void:
 	# Counter-intel ratings (foundation values; data-driven later).
 	Espionage.set_counter_intel(_player_faction, 0.5)
 	Espionage.set_counter_intel(_enemy_faction, 0.4)
+	Campaign.clear()
+	Campaign.world = world
 	# Starting resources for each faction.
 	Economy.register_faction(_player_faction.name,
 		{Economy.R.MANPOWER: 200.0, Economy.R.FUEL: 150.0, Economy.R.MATERIALS: 300.0})
@@ -59,6 +61,14 @@ func _setup_economy() -> void:
 				best = c
 		if best:
 			best.capture(_player_faction)
+		# Default campaign: capture all cities + eliminate enemy units.
+		var all_cities: Array = world.get_cities() if world else []
+		Campaign.add_objective(_player_faction,
+			{"type": Campaign.ObjectiveType.CAPTURE_CITIES, "cities": all_cities})
+		Campaign.add_objective(_player_faction,
+			{"type": Campaign.ObjectiveType.ELIMINATE_ENEMY, "threshold": 0})
+		Campaign.add_objective(_enemy_faction,
+			{"type": Campaign.ObjectiveType.ELIMINATE_ENEMY, "threshold": 0})
 	Economy.recompute_income(_player_faction.name)
 	Economy.recompute_income(_enemy_faction.name)
 

@@ -21,6 +21,7 @@ Logistics="*res://src/Logistics/Logistics.gd"
 Intelligence="*res://src/Intelligence/Intelligence.gd"
 AIController="*res://src/AI/AIController.gd"
 Espionage="*res://src/Intelligence/Espionage.gd"
+Campaign="*res://src/Core/Campaign.gd"
 
 [editor_plugins]
 

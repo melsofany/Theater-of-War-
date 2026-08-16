@@ -21,6 +21,7 @@ func _register_defaults() -> void:
 	_register("air_defense", _make("Air Defense", UnitType.Category.AIR_DEFENSE, 100, 4, 14, 40, 34, 6.0, 0.7, 2.0, {"can_ground": false, "can_air": true}))
 	_register("aircraft", _make("Aircraft", UnitType.Category.AIRCRAFT, 70, 0, 25, 30, 45, 22.0, 1.0, 5.0, {"domain": UnitType.Domain.AIR, "alt": 14.0, "can_air": true}))
 	_register("helicopter", _make("Helicopter", UnitType.Category.HELICOPTER, 90, 0, 18, 26, 40, 16.0, 1.2, 4.0, {"domain": UnitType.Domain.AIR, "alt": 10.0, "can_air": true}))
+	_register("destroyer", _make("Destroyer", UnitType.Category.VEHICLE, 400, 8, 30, 32, 38, 10.0, 0.8, 4.0, {"domain": UnitType.Domain.NAVAL}))
 
 
 func _make(
@@ -80,6 +81,8 @@ func cost_of(key: String) -> Dictionary:
 			return {Economy.R.MANPOWER: 20, Economy.R.FUEL: 60, Economy.R.MATERIALS: 80}
 		"helicopter":
 			return {Economy.R.MANPOWER: 25, Economy.R.FUEL: 50, Economy.R.MATERIALS: 70}
+		"destroyer":
+			return {Economy.R.MANPOWER: 40, Economy.R.FUEL: 60, Economy.R.MATERIALS: 120}
 	return {Economy.R.MANPOWER: 50, Economy.R.MATERIALS: 20}
 
 

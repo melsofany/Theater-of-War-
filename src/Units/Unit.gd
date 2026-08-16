@@ -143,6 +143,10 @@ func _physics_process(delta: float) -> void:
 		_air_step(delta)
 		_combat_step(delta)
 		return
+	if unit_type and unit_type.is_naval():
+		_naval_step(delta)
+		_combat_step(delta)
+		return
 	if agent and agent.is_navigation_finished():
 		moving = false
 		_on_arrived()
@@ -198,6 +202,33 @@ func _air_step(delta: float) -> void:
 		var target_basis := Transform3D().looking_at(look - global_position, Vector3.UP).basis
 		basis = basis.slerp(target_basis, clamp(turn_speed * delta, 0.0, 1.0))
 	moving = dist > 0.5
+
+
+# Naval units move on water only (land is impassable for them). Simple steering
+# toward the target position, constrained to water tiles.
+func _naval_step(delta: float) -> void:
+	var to: Vector3 = target_position - global_position
+	to.y = 0
+	var dist: float = to.length()
+	if dist > 0.1 and fuel > 0.0:
+		var dir: Vector3 = to.normalized()
+		var speed: float = max_speed * compute_readiness()
+		var step: float = minf(speed * delta, dist)
+		var candidate: Vector3 = global_position + dir * step
+		# Only advance into water; stop at the shoreline.
+		if world and not world.is_water_at(candidate.x, candidate.z):
+			moving = false
+		else:
+			global_position = candidate
+			fuel = maxf(fuel - fuel_per_move * step, 0.0)
+	# Naval units sit at water level (y = 0).
+	global_position.y = 0.0
+	if to.length_squared() > 0.001:
+		var look := global_position + to.normalized()
+		look.y = global_position.y
+		var target_basis := Transform3D().looking_at(look - global_position, Vector3.UP).basis
+		basis = basis.slerp(target_basis, clamp(turn_speed * delta, 0.0, 1.0))
+	moving = moving and dist > 0.5
 
 
 # --- Combat -----------------------------------------------------------------

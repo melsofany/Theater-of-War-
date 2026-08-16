@@ -212,15 +212,36 @@ surveillance, deception and information confidence.
 **Exit criteria:** agencies, agents, counter-intelligence, surveillance,
 deception, information confidence; ready for Phase 10.
 
-## Phase 10 and beyond
+## Phase 10 — Naval, Air, Campaigns, Balance (subset complete)
 
-- Air power, naval power, campaigns.
-- Large world.
-- Multiplayer.
-- Performance optimization.
-- Modding.
-- Balance.
-- Art and audio.
+A bounded subset of the broad Phase 10 scope. The remaining items (large world,
+multiplayer, performance pass, modding, art/audio) are tracked as future work.
+
+- **Naval domain**: `UnitType.Domain.NAVAL` added; `is_naval()`. `Destroyer`
+  preset (high HP, naval-only). Naval units use `_naval_step` — they move on
+  water and stop at the shoreline (`World.is_water_at`); land is impassable for
+  them. `World.is_water_at` helper added.
+- **Air power**: aircraft/helicopters (Phase 3) already ignore terrain at cruise
+  altitude and can attack air; the air domain is complete for this scope.
+- **Campaign objectives** (`Campaign` autoload): `CAPTURE_CITIES`,
+  `ELIMINATE_ENEMY`, `HOLD_POSITION` (accumulates hold time, resets when units
+  leave). Win when all of a faction's objectives complete; lose when the enemy
+  wins. PlayerController sets a default campaign (capture all cities +
+  eliminate enemy). HUD shows objective progress / WON / LOST.
+- **Balance**: stats are data in `UnitFactory` presets (costs, HP, armor, damage,
+  range, sight, speed); tuning is a data edit, not code.
+- Tests: +10 (destroyer domain, naval moves on water, naval stops at shore,
+  is_water_at, capture cities done/not-done, eliminate enemy, hold accumulates,
+  hold resets, multi-objective all-required) -> 99 passing / 202 asserts.
+
+### Future work (Phase 10b+)
+
+- Large world / streaming terrain, campaigns across multiple theaters.
+- Multiplayer (netcode, sync, host/join).
+- Performance pass (instanced rendering, spatial partitioning, LOD).
+- Modding (data-driven unit/map defs, mod loading).
+- Balance pass (combat math tuning, economy curves).
+- Art & audio (models, animations, SFX, music).
 
 ## Status legend
 

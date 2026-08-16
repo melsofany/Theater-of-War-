@@ -125,6 +125,12 @@ func ground_height_at(wx: float, wz: float) -> float:
 	return 0.0
 
 
+func is_water_at(wx: float, wz: float) -> bool:
+	if map_data:
+		return map_data.is_water(wx, wz)
+	return false
+
+
 func is_passable(wx: float, wz: float) -> bool:
 	if map_data:
 		return not map_data.is_impassable(wx, wz)
