@@ -2,8 +2,10 @@ extends Node3D
 ## PlayerController
 ##
 ## Bridges mouse input to selection + movement orders. Handles single-click
-## select, box-drag multi-select, right-click move-to-ground commands and
-## control-group assignment/selection (Ctrl+1..9 / 1..9).
+## select, box-drag multi-select, right-click move-to-ground commands,
+## control-group assignment/selection (Ctrl+1..9 / 1..9) and the command
+## hierarchy (V/[/]: select / promote / drill the active command node so an
+## order can move a whole brigade instead of each unit).
 
 class_name PlayerController
 
@@ -23,6 +25,17 @@ func _ready() -> void:
 	if not command_marker_scene:
 		command_marker_scene = preload("res://src/UI/CommandMarker.tscn")
 	_seed_battlefield()
+	_build_command_tree()
+
+
+func _build_command_tree() -> void:
+	if not world:
+		return
+	var player_units: Array = []
+	for u in world.get_units():
+		if u.faction and u.faction.is_player:
+			player_units.append(u)
+	CommandTree.build_for(player_units)
 
 
 func _seed_battlefield() -> void:
@@ -142,9 +155,22 @@ func _pick_unit(pos: Vector2) -> Unit:
 
 
 func _issue_move() -> void:
+	var ground := camera.ground_point_at_screen(get_viewport().get_mouse_position())
+	# If a command node is active and at least one selected unit belongs to it,
+	# issue the order to the whole node (formation spread).
+	var use_command := false
+	if CommandTree.active_node != null and not SelectionManager.selected.is_empty():
+		var active_units: Array = CommandTree.active_node.collect_units()
+		for s in SelectionManager.selected:
+			if s in active_units:
+				use_command = true
+				break
+	if use_command:
+		CommandTree.active_node.order_move(ground)
+		_spawn_move_marker(ground)
+		return
 	if SelectionManager.selected.is_empty():
 		return
-	var ground := camera.ground_point_at_screen(get_viewport().get_mouse_position())
 	var count: int = SelectionManager.selected.size()
 	var cols: int = int(ceil(sqrt(count)))
 	for i in count:
@@ -179,6 +205,14 @@ func _handle_key(event: InputEventKey) -> void:
 			_set_rally_from_selected_building()
 		KEY_H:
 			_focus_camera_on_selection()
+		KEY_V:
+			_select_command_of_selection()
+		KEY_BRACKETLEFT:
+			CommandTree.promote()
+			_select_active_command_units()
+		KEY_BRACKETRIGHT:
+			CommandTree.drill()
+			_select_active_command_units()
 
 
 func _get_selected_building() -> Building:
@@ -216,3 +250,28 @@ func _focus_camera_on_selection() -> void:
 		return
 	var center := sum / float(n)
 	camera.focus_on(center)
+
+
+# --- Command hierarchy ------------------------------------------------------
+
+func _select_command_of_selection() -> void:
+	if SelectionManager.selected.is_empty():
+		return
+	var first = SelectionManager.selected[0]
+	if first is Unit:
+		CommandTree.select_node_of(first)
+	_select_active_command_units()
+
+
+func _select_active_command_units() -> void:
+	if CommandTree.active_node == null:
+		return
+	var units: Array = CommandTree.active_node.collect_units()
+	# Filter to valid player units only.
+	var valid: Array = []
+	for u in units:
+		if is_instance_valid(u) and u is Unit and u.faction and u.faction.is_player:
+			valid.append(u)
+	SelectionManager.clear(true)
+	for u in valid:
+		SelectionManager.add(u)

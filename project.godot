@@ -15,6 +15,7 @@ GameManager="*res://src/Core/GameManager.gd"
 SelectionManager="*res://src/Core/SelectionManager.gd"
 ControlGroupManager="*res://src/Core/ControlGroupManager.gd"
 UnitFactory="*res://src/Units/UnitFactory.gd"
+CommandTree="*res://src/Core/CommandTree.gd"
 
 [editor_plugins]
 

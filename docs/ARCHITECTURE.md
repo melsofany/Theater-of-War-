@@ -67,6 +67,9 @@ World ──> Units ──> Combat                      │
 | --- | --- |
 | `GameManager` | Owns the active session: world reference, pause, game speed, elapsed clock. Thin in Phase 0. |
 | `SelectionManager` | Owns the current selection set and drag-select rectangle; emits `selection_changed`. |
+| `ControlGroupManager` | Numeric control groups (Ctrl+1..9 assign / 1..9 recall). |
+| `UnitFactory` | Registry of `UnitType` definitions (infantry, tank, artillery, …). |
+| `CommandTree` | Player faction's command hierarchy (Army → … → Platoon); tracks the active command node for echelon-based ordering. |
 
 Autoloads are intentionally few. Systems that need cross-scene access go through
 `GameManager.world`, not a forest of singletons.

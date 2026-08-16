@@ -10,20 +10,36 @@ class_name HUD
 
 @onready var label: Label = $VBox/Label
 @onready var count_label: Label = $VBox/CountLabel
+@onready var command_label: Label = $VBox/CommandLabel
 @onready var building_label: Label = $VBox/BuildingLabel
 
 
 func _ready() -> void:
 	SelectionManager.selection_changed.connect(_on_selection_changed)
+	if CommandTree:
+		CommandTree.active_node_changed.connect(_on_active_node_changed)
 	_update_count(0)
+	_update_command()
 
 
 func _on_selection_changed(units: Array) -> void:
 	_update_count(units.size())
 
 
+func _on_active_node_changed(_node: CommandNode) -> void:
+	_update_command()
+
+
 func _update_count(n: int) -> void:
 	count_label.text = "Selected units: %d" % n
+
+
+func _update_command() -> void:
+	if CommandTree and CommandTree.active_node:
+		var n: CommandNode = CommandTree.active_node
+		command_label.text = "Command: %s  (%d units)" % [n.path_string(), n.unit_count()]
+	else:
+		command_label.text = ""
 
 
 func _process(_delta: float) -> void:
@@ -38,6 +54,7 @@ func _process(_delta: float) -> void:
 		building_label.text = "%s — queue: %d  (B: build, Y: rally)" % [b.display_name, b.production_queue.size()]
 	else:
 		building_label.text = ""
+	_update_command()
 	queue_redraw()
 
 

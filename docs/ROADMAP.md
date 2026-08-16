@@ -67,10 +67,24 @@ defines the game.
 
 **Exit criteria:** full combat model with all seven unit categories; ready for Phase 4. ✅
 
-## Phase 4 — Command Hierarchy
+## Phase 4 — Command Hierarchy (complete)
 
-- Army → Corps → Division → Brigade → Battalion → Company → Platoon.
-- Order a brigade instead of moving each unit manually; orders propagate down.
+- `CommandNode` (RefCounted): echelon enum (Army → Corps → Division → Brigade →
+  Battalion → Company → Platoon), parent/children, leaf platoons hold Unit
+  instances. `order_move` / `order_attack` / `order_stop` propagate to every
+  unit below, distributed across a grid formation so a brigade moves spread out.
+- `CommandTree` autoload: builds the player's hierarchy at game start (Army →
+  Corps → Division → Brigade → Platoons of ≤4 units), tracks the active command
+  node, `promote`/`drill` to move up/down echelons, `select_node_of(unit)`.
+- PlayerController keys: **V** select the command node of the current selection;
+  **[** / **]** promote / drill the active echelon. Right-click issues a move
+  order to the whole active node (formation) when a selected unit belongs to it.
+- HUD shows the active command path (e.g. "1st Army → I Corps → … → 2nd Platoon")
+  and unit count.
+- Tests: +6 (tree shape, unit collection, order propagation + formation spread,
+  find_containing, promote/drill, path string) → 49 passing / 123 asserts.
+
+**Exit criteria:** give an order to a brigade instead of moving each unit manually; ready for Phase 5. ✅
 
 ## Phase 5 — Economy
 
