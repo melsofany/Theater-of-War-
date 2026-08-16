@@ -15,3 +15,5 @@ func _ready() -> void:
 	var cam := get_node_or_null("Camera3D") as RTSCamera
 	if w and cam:
 		cam.world = w
+		if Networking:
+			Networking.attach_world(w)

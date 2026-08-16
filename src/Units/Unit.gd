@@ -137,21 +137,25 @@ func move_to(pos: Vector3) -> void:
 func _physics_process(delta: float) -> void:
 	if not alive:
 		return
+	var old_pos := global_position
 	_cooldown = maxf(_cooldown - delta, 0.0)
 	# Air units hover at cruise altitude and don't use the navmesh/terrain.
 	if unit_type and unit_type.is_air():
 		_air_step(delta)
 		_combat_step(delta)
+		_sync_spatial(old_pos)
 		return
 	if unit_type and unit_type.is_naval():
 		_naval_step(delta)
 		_combat_step(delta)
+		_sync_spatial(old_pos)
 		return
 	if agent and agent.is_navigation_finished():
 		moving = false
 		_on_arrived()
 	_combat_step(delta)
 	if not agent:
+		_sync_spatial(old_pos)
 		return
 	var next := agent.get_next_path_position()
 	var dir := (next - global_position)
@@ -183,6 +187,12 @@ func _physics_process(delta: float) -> void:
 		look.y = global_position.y
 		var target_basis := Transform3D().looking_at(look - global_position, Vector3.UP).basis
 		basis = basis.slerp(target_basis, clamp(turn_speed * delta, 0.0, 1.0))
+	_sync_spatial(old_pos)
+
+
+func _sync_spatial(old_pos: Vector3) -> void:
+	if world:
+		world.update_unit_spatial(self, old_pos)
 
 
 func _air_step(delta: float) -> void:
@@ -256,8 +266,11 @@ func _acquire_target() -> void:
 		return
 	var best: Unit = null
 	var best_d := unit_type.sight_range
-	for u in world.get_enemy_units_of(faction):
-		if not u.alive:
+	var candidates: Array = world.query_units_radius(global_position, unit_type.sight_range)
+	for u in candidates:
+		if not u is Unit or u.faction == null or faction == null:
+			continue
+		if not faction.is_enemy_of(u.faction) or not u.alive:
 			continue
 		if not unit_type.can_attack(u.unit_type):
 			continue
