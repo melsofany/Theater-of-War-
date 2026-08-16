@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [Main, main]
+  pull_request:
+    branches: [Main, main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests & Headless Build (Godot 4.3)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot 4.3
+        run: |
+          curl -sL -o godot.zip "https://github.com/godotengine/godot-builds/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip"
+          unzip -o godot.zip
+          chmod +x Godot_v4.3-stable_linux.x86_64
+          sudo mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+          godot --version
+
+      - name: Import project resources (headless)
+        run: godot --headless --import 2>&1 | tail -n 20
+
+      - name: Run GUT tests
+        run: |
+          godot --headless -s addons/gut/gut_cmdln.gd \
+            -gdir=res://tests \
+            -gexit
+
+      - name: Validate scenes load
+        run: godot --headless --script tools/validate_project.gd

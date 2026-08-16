@@ -1,0 +1,7 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" fill="#1a2332"/>
+  <rect x="20" y="20" width="88" height="88" fill="none" stroke="#c9a227" stroke-width="4"/>
+  <path d="M64 28 L80 64 L64 56 L48 64 Z" fill="#c9a227"/>
+  <path d="M64 100 L48 64 L64 72 L80 64 Z" fill="#8a6d1a"/>
+  <text x="64" y="116" font-family="sans-serif" font-size="14" fill="#c9a227" text-anchor="middle">ToW</text>
+</svg>

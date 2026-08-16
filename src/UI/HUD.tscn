@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://hudtowar01"]
+
+[ext_resource type="Script" path="res://src/UI/HUD.gd" id="1_hud"]
+
+[node name="HUD" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 120.0
+grow_horizontal = 0
+
+[node name="Label" type="Label" parent="VBox"]
+text = "Theater of War — Prototype
+LMB: select / box-select   RMB: move
+WASD/edges: pan   Wheel: zoom"
+
+[node name="CountLabel" type="Label" parent="VBox"]
+text = "Selected units: 0"

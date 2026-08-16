@@ -1,0 +1,34 @@
+# Godot 4 generated files
+.godot/
+*.import
+export_presets.cfg
+export.cfg
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Secrets / credentials — never commit
+.env
+.env.*
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Build / export artifacts
+build/
+exports/
+*.exe
+*.x86_64
+*.app
+
+# Logs
+*.log

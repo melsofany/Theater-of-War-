@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3 uid="uid://unitbase01"]
+
+[ext_resource type="Script" path="res://src/Units/Unit.gd" id="1_unit"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+radius = 0.4
+height = 1.2
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_1"]
+radius = 0.4
+height = 1.2
+
+[sub_resource type="TorusMesh" id="TorusMesh_1"]
+inner_radius = 0.5
+outer_radius = 0.75
+
+[sub_resource type="StandardMaterial3D" id="MatBody"]
+albedo_color = Color(0.2, 0.4, 0.9, 1)
+roughness = 0.6
+
+[node name="Unit" type="CharacterBody3D"]
+script = ExtResource("1_unit")
+collision_layer = 2
+collision_mask = 1
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_1")
+material_override = SubResource("MatBody")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("CapsuleShape_1")
+
+[node name="SelectionRing" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("TorusMesh_1")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+
+[node name="NavigationAgent" type="NavigationAgent3D" parent="."]
+radius = 0.5
+path_desired_distance = 0.5
+target_desired_distance = 0.5
