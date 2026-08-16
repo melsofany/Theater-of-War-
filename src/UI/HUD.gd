@@ -11,6 +11,7 @@ class_name HUD
 @onready var label: Label = $VBox/Label
 @onready var count_label: Label = $VBox/CountLabel
 @onready var command_label: Label = $VBox/CommandLabel
+@onready var resource_label: Label = $VBox/ResourceLabel
 @onready var building_label: Label = $VBox/BuildingLabel
 
 
@@ -54,8 +55,21 @@ func _process(_delta: float) -> void:
 		building_label.text = "%s — queue: %d  (B: build, Y: rally)" % [b.display_name, b.production_queue.size()]
 	else:
 		building_label.text = ""
+	_update_resources()
 	_update_command()
 	queue_redraw()
+
+
+func _update_resources() -> void:
+	if not Economy or not Economy._amounts.has("blue"):
+		resource_label.text = ""
+		return
+	var mp: int = int(Economy.amount("blue", Economy.R.MANPOWER))
+	var fuel: int = int(Economy.amount("blue", Economy.R.FUEL))
+	var mat: int = int(Economy.amount("blue", Economy.R.MATERIALS))
+	var mp_i: float = Economy.income("blue", Economy.R.MANPOWER)
+	var mat_i: float = Economy.income("blue", Economy.R.MATERIALS)
+	resource_label.text = "MP %d (+%.1f/s)  Fuel %d  Mat %d (+%.1f/s)" % [mp, mp_i, fuel, mat, mat_i]
 
 
 func _draw() -> void:

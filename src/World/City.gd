@@ -1,14 +1,18 @@
 extends StaticBody3D
 ## City
 ##
-## A settlement on the map. In Phase 2 it is a visual + selectable marker with
-## a name; production/capture mechanics arrive in later phases (Economy,
-## command).
+## A settlement on the map. Visually a selectable marker; in Phase 5 a city
+## grants its owning faction per-second manpower + materials income (captured
+## by moving a unit onto it).
 
 class_name City
 
 @export var city_name: String = "City"
 @export var faction: Faction = null
+## Faction that currently owns the city for economy income.
+var owner_faction: Faction = null
+@export var income_manpower: float = 2.0
+@export var income_materials: float = 1.5
 var selected: bool = false
 
 @onready var body_mesh: MeshInstance3D = $Body
@@ -23,6 +27,13 @@ func _ready() -> void:
 
 func set_selected(value: bool) -> void:
 	selected = value
+	_update_visuals()
+
+
+func capture(faction: Faction) -> void:
+	owner_faction = faction
+	if label:
+		label.modulate = faction.color if faction else Color.WHITE
 	_update_visuals()
 
 

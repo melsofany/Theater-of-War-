@@ -86,9 +86,25 @@ defines the game.
 
 **Exit criteria:** give an order to a brigade instead of moving each unit manually; ready for Phase 5. ✅
 
-## Phase 5 — Economy
+## Phase 5 — Economy (complete)
 
-- Resources, production, infrastructure.
+- `Economy` autoload: per-faction resource stores (Manpower, Fuel, Materials)
+  with capacities, per-second income from owned infrastructure, `can_afford` /
+  `spend` / `credit` / `recompute_income`.
+- `UnitFactory.cost_of(key)`: production cost per unit type (manpower/fuel/
+  materials) — production is blocked when a faction can't afford it.
+- City ownership & capture: `City.owner_faction`, `capture(faction)`; cities
+  grant manpower + materials income; `World.get_cities()`. A unit moving within
+  3 m of a city captures it for its faction; income is recomputed on capture.
+- Buildings add fuel income and materials/fuel storage capacity.
+- PlayerController: registers factions with starting resources, assigns the
+  nearest city to the player (rest to enemy), checks affordability before
+  queuing production and spends on success.
+- HUD: `ResourceLabel` shows live Manpower/Fuel/Materials + income rates.
+- Tests: +8 (affordability, spend deduction/block, capacity clamp, income
+  accumulation, production costs) → 57 passing / 135 asserts.
+
+**Exit criteria:** resources + production costs + city-based income; ready for Phase 6. ✅
 
 ## Phase 6 — Logistics
 

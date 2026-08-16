@@ -25,7 +25,32 @@ func _ready() -> void:
 	if not command_marker_scene:
 		command_marker_scene = preload("res://src/UI/CommandMarker.tscn")
 	_seed_battlefield()
+	_setup_economy()
 	_build_command_tree()
+
+
+func _setup_economy() -> void:
+	Economy.clear()
+	Economy.world = world
+	# Starting resources for each faction.
+	Economy.register_faction(_player_faction.name,
+		{Economy.R.MANPOWER: 200.0, Economy.R.FUEL: 150.0, Economy.R.MATERIALS: 300.0})
+	Economy.register_faction(_enemy_faction.name,
+		{Economy.R.MANPOWER: 200.0, Economy.R.FUEL: 150.0, Economy.R.MATERIALS: 300.0})
+	# The player owns the city nearest their HQ (if any).
+	if world:
+		var best: City = null
+		var best_d := 1e9
+		for c in world.get_cities():
+			c.capture(_enemy_faction)
+			var d: float = c.global_position.distance_squared_to(Vector3(-8, 0, 0))
+			if d < best_d:
+				best_d = d
+				best = c
+		if best:
+			best.capture(_player_faction)
+	Economy.recompute_income(_player_faction.name)
+	Economy.recompute_income(_enemy_faction.name)
 
 
 func _build_command_tree() -> void:
@@ -36,6 +61,30 @@ func _build_command_tree() -> void:
 		if u.faction and u.faction.is_player:
 			player_units.append(u)
 	CommandTree.build_for(player_units)
+
+
+func _process(_delta: float) -> void:
+	_check_city_capture()
+
+
+func _check_city_capture() -> void:
+	if not world:
+		return
+	var changed := false
+	for c in world.get_cities():
+		for u in world.get_units():
+			if not u.alive:
+				continue
+			if u.faction == null:
+				continue
+			if c.owner_faction == u.faction:
+				continue
+			if u.global_position.distance_to(c.global_position) < 3.0:
+				c.capture(u.faction)
+				changed = true
+	if changed:
+		Economy.recompute_income(_player_faction.name)
+		Economy.recompute_income(_enemy_faction.name)
 
 
 func _seed_battlefield() -> void:
@@ -224,8 +273,13 @@ func _get_selected_building() -> Building:
 
 func _queue_production_from_selected_building() -> void:
 	var b := _get_selected_building()
-	if b:
-		b.queue_unit()
+	if not b:
+		return
+	var cost: Dictionary = UnitFactory.cost_of(b.produced_unit_key)
+	if not Economy.can_afford(_player_faction.name, cost):
+		return
+	if b.queue_unit():
+		Economy.spend(_player_faction.name, cost)
 
 
 func _set_rally_from_selected_building() -> void:

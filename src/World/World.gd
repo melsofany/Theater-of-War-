@@ -80,6 +80,15 @@ func get_buildings() -> Array:
 	return out
 
 
+func get_cities() -> Array:
+	var out: Array = []
+	if features_root:
+		for c in features_root.get_children():
+			if c is City:
+				out.append(c)
+	return out
+
+
 func get_enemy_units_of(faction: Faction) -> Array:
 	var out: Array = []
 	for u in get_units():

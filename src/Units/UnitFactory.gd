@@ -63,5 +63,25 @@ func get_type(key: String) -> UnitType:
 	return _types.get(key, _types["infantry"])
 
 
+func cost_of(key: String) -> Dictionary:
+	# Resource costs (Economy.R keys) to produce one unit of this type.
+	match key:
+		"infantry":
+			return {Economy.R.MANPOWER: 50, Economy.R.MATERIALS: 20}
+		"vehicle":
+			return {Economy.R.MANPOWER: 30, Economy.R.FUEL: 20, Economy.R.MATERIALS: 50}
+		"tank":
+			return {Economy.R.MANPOWER: 25, Economy.R.FUEL: 40, Economy.R.MATERIALS: 90}
+		"artillery":
+			return {Economy.R.MANPOWER: 30, Economy.R.FUEL: 15, Economy.R.MATERIALS: 70}
+		"air_defense":
+			return {Economy.R.MANPOWER: 30, Economy.R.FUEL: 20, Economy.R.MATERIALS: 60}
+		"aircraft":
+			return {Economy.R.MANPOWER: 20, Economy.R.FUEL: 60, Economy.R.MATERIALS: 80}
+		"helicopter":
+			return {Economy.R.MANPOWER: 25, Economy.R.FUEL: 50, Economy.R.MATERIALS: 70}
+	return {Economy.R.MANPOWER: 50, Economy.R.MATERIALS: 20}
+
+
 func all_keys() -> Array:
 	return _types.keys()

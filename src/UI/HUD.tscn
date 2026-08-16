@@ -35,5 +35,8 @@ text = "Selected units: 0"
 [node name="CommandLabel" type="Label" parent="VBox"]
 text = ""
 
+[node name="ResourceLabel" type="Label" parent="VBox"]
+text = ""
+
 [node name="BuildingLabel" type="Label" parent="VBox"]
 text = ""
