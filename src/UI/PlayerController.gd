@@ -32,6 +32,8 @@ func _ready() -> void:
 func _setup_economy() -> void:
 	Economy.clear()
 	Economy.world = world
+	Logistics.clear()
+	Logistics.world = world
 	# Starting resources for each faction.
 	Economy.register_faction(_player_faction.name,
 		{Economy.R.MANPOWER: 200.0, Economy.R.FUEL: 150.0, Economy.R.MATERIALS: 300.0})

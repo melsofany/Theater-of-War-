@@ -12,6 +12,7 @@ class_name HUD
 @onready var count_label: Label = $VBox/CountLabel
 @onready var command_label: Label = $VBox/CommandLabel
 @onready var resource_label: Label = $VBox/ResourceLabel
+@onready var logistics_label: Label = $VBox/LogisticsLabel
 @onready var building_label: Label = $VBox/BuildingLabel
 
 
@@ -56,8 +57,23 @@ func _process(_delta: float) -> void:
 	else:
 		building_label.text = ""
 	_update_resources()
+	_update_logistics()
 	_update_command()
 	queue_redraw()
+
+
+func _update_logistics() -> void:
+	var units: Array = SelectionManager.selected if SelectionManager else []
+	if units.is_empty():
+		logistics_label.text = ""
+		return
+	# Show the first selected unit's supply/fuel/readiness as a sample.
+	var u: Unit = units[0]
+	var sup: int = int(u.supply)
+	var fuel: int = int(u.fuel)
+	var rd: int = int(u.readiness * 100.0)
+	var in_sup: String = "in supply" if (Logistics and Logistics.is_in_supply(u)) else "cut off"
+	logistics_label.text = "Supply %d/%d  Fuel %d/%d  Readiness %d%%  (%s)" % [sup, int(u.max_supply), fuel, int(u.max_fuel), rd, in_sup]
 
 
 func _update_resources() -> void:

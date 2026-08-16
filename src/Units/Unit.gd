@@ -38,6 +38,15 @@ var radius: float = 0.5
 var alive: bool = true
 var target: Unit = null
 var _cooldown: float = 0.0
+# --- Logistics state (Phase 6) ----------------------------------------------
+var supply: float = 20.0
+var max_supply: float = 20.0
+var fuel: float = 100.0
+var max_fuel: float = 100.0
+var fuel_per_move: float = 0.05
+var ammo_per_shot: float = 1.0
+## 0..1 effectiveness multiplier from supply/fuel/health; affects damage + speed.
+var readiness: float = 1.0
 
 @onready var body_mesh: MeshInstance3D = $Body
 @onready var selection_ring: MeshInstance3D = $SelectionRing
@@ -66,9 +75,27 @@ func _apply_type() -> void:
 	max_speed = unit_type.max_speed
 	turn_speed = unit_type.turn_speed
 	radius = unit_type.radius
+	max_supply = unit_type.max_supply
+	supply = max_supply
+	max_fuel = unit_type.max_fuel
+	fuel = max_fuel
+	fuel_per_move = unit_type.fuel_per_move
+	ammo_per_shot = unit_type.ammo_per_shot
 	if agent:
 		agent.radius = radius
 	_update_visuals()
+
+
+## Effectiveness from supply, fuel and health. Air units are grounded (0 move)
+## without fuel; ground units move at reduced speed when low on fuel.
+func compute_readiness() -> float:
+	var s_norm: float = supply / maxf(max_supply, 1.0)
+	var f_norm: float = fuel / maxf(max_fuel, 1.0)
+	var h_norm: float = health / maxf(max_health, 1.0)
+	var r: float = 0.2 + 0.4 * s_norm + 0.4 * f_norm
+	r *= clampf(h_norm, 0.0, 1.0)
+	readiness = clampf(r, 0.0, 1.0)
+	return readiness
 
 
 func set_selected(value: bool) -> void:
@@ -129,14 +156,20 @@ func _physics_process(delta: float) -> void:
 	# Stop to shoot if we have a target in range.
 	if target and is_instance_valid(target) and _in_range(target):
 		return
-	var speed := max_speed
+	# No fuel -> cannot move (grounded). Air units handled in _air_step.
+	if fuel <= 0.0:
+		moving = false
+		return
+	var speed := max_speed * compute_readiness()
 	if world:
 		var cost := world.move_cost_at(global_position.x, global_position.z)
 		if is_inf(cost):
 			return
-		speed = max_speed / maxf(cost, 0.0001)
+		speed = speed / maxf(cost, 0.0001)
 	var step: float = minf(speed * delta, dist)
 	global_position += dir * step
+	# Burn fuel proportional to distance moved.
+	fuel = maxf(fuel - fuel_per_move * step, 0.0)
 	global_position.y = world.ground_height_at(global_position.x, global_position.z) if world else 0.0
 	if dir.length_squared() > 0.001:
 		var look := global_position + dir
@@ -150,10 +183,11 @@ func _air_step(delta: float) -> void:
 	var to: Vector3 = target_position - global_position
 	to.y = 0
 	var dist: float = to.length()
-	if dist > 0.1:
+	if dist > 0.1 and fuel > 0.0:
 		var dir: Vector3 = to.normalized()
-		var step: float = minf(max_speed * delta, dist)
+		var step: float = minf(max_speed * compute_readiness() * delta, dist)
 		global_position += dir * step
+		fuel = maxf(fuel - fuel_per_move * step, 0.0)
 	global_position.y = unit_type.cruise_altitude
 	if to.length_squared() > 0.001:
 		var look := global_position + to.normalized()
@@ -207,7 +241,12 @@ func _in_range(other: Unit) -> bool:
 
 
 func _fire(other: Unit) -> void:
-	other.take_damage(unit_type.damage)
+	if supply < ammo_per_shot:
+		# Out of ammo: cannot fire this tick.
+		return
+	supply = maxf(supply - ammo_per_shot, 0.0)
+	var dmg: float = unit_type.damage * compute_readiness()
+	other.take_damage(dmg)
 
 
 func take_damage(amount: float) -> void:

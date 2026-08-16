@@ -38,6 +38,15 @@ enum Category {
 @export var can_attack_air: bool = false
 ## For artillery: shells arc over obstacles and ignore line-of-sight.
 @export var indirect: bool = false
+# --- Logistics (Phase 6) ----------------------------------------------------
+## Combined ammunition + supplies capacity (shots worth / supply units).
+@export var max_supply: float = 20.0
+## Fuel capacity (units of movement).
+@export var max_fuel: float = 100.0
+## Fuel consumed per metre of movement.
+@export var fuel_per_move: float = 0.05
+## Supply consumed per shot fired.
+@export var ammo_per_shot: float = 1.0
 
 
 func is_air() -> bool:

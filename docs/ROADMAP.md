@@ -106,9 +106,24 @@ defines the game.
 
 **Exit criteria:** resources + production costs + city-based income; ready for Phase 6. ✅
 
-## Phase 6 — Logistics
+## Phase 6 — Logistics (complete)
 
-- Supply → Transportation → Fuel → Ammunition → Readiness.
+- `Logistics` autoload: per-unit supply/fuel state and readiness. Buildings are
+  supply sources; units within `supply_radius` of a friendly building are
+  resupplied over time, cut-off units slowly attrition. `is_in_supply(unit)`.
+- `UnitType`: `max_supply`, `max_fuel`, `fuel_per_move`, `ammo_per_shot`.
+- `Unit`: `supply`/`fuel`/`readiness` state; `_apply_type` initialises them;
+  `compute_readiness()` = 0.2 + 0.4·supply_norm + 0.4·fuel_norm scaled by health.
+  Movement burns fuel (grounded when fuel ≤ 0; air units stop). Firing consumes
+  ammo and is blocked when out of supply; damage scales by readiness. Move speed
+  scales by readiness.
+- HUD: `LogisticsLabel` shows selected unit's supply/fuel/readiness + supply
+  status (in supply / cut off).
+- Tests: +9 (readiness full/low, fire consumes ammo + scales damage, fire
+  blocked without ammo, resupply near building, attrition when cut off, in/out
+  of supply) → 65 passing / 145 asserts.
+
+**Exit criteria:** supply → transportation (range) → fuel → ammunition → readiness; ready for Phase 7. ✅
 
 ## Phase 7 — Intelligence
 

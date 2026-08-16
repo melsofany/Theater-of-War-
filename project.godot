@@ -17,6 +17,7 @@ ControlGroupManager="*res://src/Core/ControlGroupManager.gd"
 Economy="*res://src/Economy/Economy.gd"
 UnitFactory="*res://src/Units/UnitFactory.gd"
 CommandTree="*res://src/Core/CommandTree.gd"
+Logistics="*res://src/Logistics/Logistics.gd"
 
 [editor_plugins]
 
