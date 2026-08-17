@@ -13,7 +13,11 @@ func _ready() -> void:
 	tree.paused = false
 	var w := get_node_or_null("World") as World
 	var cam := get_node_or_null("Camera3D") as RTSCamera
+	var minimap := get_node_or_null("Minimap") as Minimap
 	if w and cam:
 		cam.world = w
 		if Networking:
 			Networking.attach_world(w)
+	if w and minimap:
+		minimap.world = w
+		minimap.call_deferred("_sync_world_bounds")

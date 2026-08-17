@@ -49,10 +49,12 @@ func _build_terrain() -> void:
 		c.queue_free()
 	_chunk_meshes.clear()
 	_chunk_manager = null
-	_ground_mat = StandardMaterial3D.new()
-	_ground_mat.vertex_color_use_as_albedo = true
-	_ground_mat.roughness = 0.95
-	_ground_mat.metalness = 0.0
+	_ground_mat = load("res://assets/materials/ground_terrain_fixed.tres") as StandardMaterial3D
+	if _ground_mat == null:
+		_ground_mat = StandardMaterial3D.new()
+		_ground_mat.vertex_color_use_as_albedo = true
+		_ground_mat.roughness = 0.95
+		_ground_mat.metalness = 0.0
 	if streaming:
 		_build_streaming_ground()
 	else:
@@ -187,17 +189,18 @@ func _build_ground() -> void:
 	_mesh_instance = MeshInstance3D.new()
 	_mesh_instance.mesh = st.commit()
 	_mesh_instance.cast_shadow = 1  # GeometryInstance3D.ShadowCastingSetting.ON
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = false
-	mat.albedo_color = Color.WHITE
-	mat.albedo_texture = _load_texture("res://assets/textures/terrain/grass.png")
-	mat.normal_enabled = true
-	mat.normal_texture = _load_texture("res://assets/textures/terrain/grass_normal.png")
-	mat.roughness_texture = _load_texture("res://assets/textures/terrain/grass_roughness.png")
-
-	mat.roughness = 0.88
-	mat.metallic = 0.0
-	mat.uv1_scale = Vector3(7.0, 7.0, 7.0)
+	var mat := load("res://assets/materials/ground_terrain_fixed.tres") as StandardMaterial3D
+	if mat == null:
+		mat = StandardMaterial3D.new()
+		mat.vertex_color_use_as_albedo = false
+		mat.albedo_color = Color.WHITE
+		mat.albedo_texture = _load_texture("res://assets/textures/terrain/grass.png")
+		mat.normal_enabled = true
+		mat.normal_texture = _load_texture("res://assets/textures/terrain/grass_normal.png")
+		mat.roughness_texture = _load_texture("res://assets/textures/terrain/grass_roughness.png")
+		mat.roughness = 0.88
+		mat.metallic = 0.0
+		mat.uv1_scale = Vector3(7.0, 7.0, 7.0)
 	_mesh_instance.material_override = mat
 	add_child(_mesh_instance)
 

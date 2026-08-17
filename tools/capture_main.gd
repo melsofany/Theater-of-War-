@@ -37,8 +37,8 @@ func _capture() -> void:
     # Pull up and point at the center to show the full formation.
     camera.projection = Camera3D.PROJECTION_PERSPECTIVE
     camera.fov = 52.0
-    camera.global_position = Vector3(8.0, 48.0, 8.0)
-    camera.look_at(Vector3(5.0, 0.0, 0.0), Vector3.UP)
+    camera.global_position = Vector3(125.0, 105.0, 125.0)
+    camera.look_at(Vector3(0.0, 0.0, 0.0), Vector3.UP)
     await process_frame
     await create_timer(1.0).timeout
     viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/main_overview.png"))
