@@ -42,15 +42,18 @@ func _capture() -> void:
     await process_frame
     await create_timer(1.0).timeout
     viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/main_overview.png"))
-    # Modern-city showcase: Northport is generated around (25.6, -32.0).
+    # Meta-city showcase: use a true RTS top-down view over Northport.
     var hud := scene.get_node_or_null("HUD") as Control
     var minimap := scene.get_node_or_null("Minimap") as Control
     if hud:
         hud.visible = false
     if minimap:
         minimap.visible = false
-    camera.global_position = Vector3(70.0, 62.0, 28.0)
-    camera.look_at(Vector3(25.6, 7.0, -32.0), Vector3.UP)
+    camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+    camera.size = 59.0
+    camera.global_position = Vector3(25.6, 92.0, -32.0)
+    camera.look_at(Vector3(25.6, 0.0, -32.0), Vector3(0.0, 0.0, -1.0))
+
     await process_frame
     await create_timer(1.0).timeout
     viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/modern_city_overview.png"))
