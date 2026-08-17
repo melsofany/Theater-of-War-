@@ -123,8 +123,9 @@ func _seed_battlefield() -> void:
 		b.produced_unit_key = "infantry"
 
 	if unit_scene and world:
-		# A mixed player force showcasing infantry, sniper and tank visuals.
-		var keys := ["infantry", "sniper", "tank"]
+		# A mixed player force showcasing the sniper and imported Meta AI assets.
+		var keys := ["infantry", "sniper", "humvee", "tank", "howitzer_m777"]
+
 		for i in keys.size():
 			var u := unit_scene.instantiate() as Unit
 			world.units_root.add_child(u)
@@ -132,13 +133,16 @@ func _seed_battlefield() -> void:
 			u.world = world
 			if UnitFactory:
 				u.unit_type = UnitFactory.get_type(keys[i])
-			var x := -4.0 + i * 2.0
+				u._apply_type()
+			var x := -8.0 + i * 4.0
+
 			u.global_position = Vector3(x, world.ground_height_at(x, 6.0), 6.0)
 			u.set_selected(false)
 
 	if unit_scene and world:
-		# Enemy force: an infantry squad + an air-defense unit (to threaten air).
-		var ekeys := ["infantry", "infantry", "air_defense"]
+		# Enemy force: imported artillery and aircraft assets opposing the player line.
+		var ekeys := ["infantry", "cannon_mobile", "mlrs_rocket_launcher", "air_defense", "fighter"]
+
 		for i in ekeys.size():
 			var e := unit_scene.instantiate() as Unit
 			world.units_root.add_child(e)
@@ -146,7 +150,9 @@ func _seed_battlefield() -> void:
 			e.world = world
 			if UnitFactory:
 				e.unit_type = UnitFactory.get_type(ekeys[i])
-			var x := 14.0 + i * 2.0
+				e._apply_type()
+			var x := 8.0 + i * 4.0
+
 			e.global_position = Vector3(x, world.ground_height_at(x, -6.0), -6.0)
 			e.set_selected(false)
 			e.patrol_points = [

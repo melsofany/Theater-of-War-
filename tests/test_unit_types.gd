@@ -7,6 +7,11 @@ func test_factory_has_all_categories():
 		assert_true(keys.has(k), "missing key: %s" % k)
 
 
+func test_meta_ai_asset_types_are_registered():
+	for k in ["humvee", "apc", "cannon_fixed", "cannon_mobile", "howitzer_m777", "mortar_team", "missile_launcher_fixed", "missile_launcher_mobile", "mlrs_rocket_launcher", "bomber", "transport_aircraft", "fighter"]:
+		assert_true(UnitFactory.all_keys().has(k), "missing Meta AI asset key: %s" % k)
+
+
 func test_sniper_type_is_registered():
 	var sniper := UnitFactory.get_type("sniper")
 	assert_eq(sniper.category, UnitType.Category.SNIPER)

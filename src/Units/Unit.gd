@@ -132,6 +132,12 @@ func _rebuild_visual_model() -> void:
 		node.queue_free()
 	# RTS readability: keep units visibly larger than the terrain grid.
 	visual_model.scale = Vector3.ONE * 1.65
+	# Prefer the supplied top-down Meta AI art when available. The procedural
+	# meshes below remain as a safe fallback for unsupported unit categories.
+	if _add_meta_asset_sprite():
+		body_mesh.visible = false
+		_update_visuals()
+		return
 	body_mesh.visible = unit_type.category == UnitType.Category.INFANTRY or unit_type.category == UnitType.Category.SNIPER
 	body_mesh.scale = Vector3.ONE
 	body_mesh.position = Vector3(0, 0.6, 0)
@@ -179,6 +185,67 @@ func _rebuild_visual_model() -> void:
 			_add_visual(_box(Vector3(0.55, 0.45, 1.15)), Vector3(0, 0.7, 0), Vector3.ONE, "HelicopterBody")
 			_add_visual(_box(Vector3(2.0, 0.04, 0.08)), Vector3(0, 1.15, 0), Vector3.ONE, "Rotor")
 	_update_visuals()
+
+
+func _meta_asset_path() -> String:
+	if unit_type == null:
+		return ""
+	match unit_type.key:
+		"humvee": return "res://assets/meta_units/humvee_vehicle.png"
+		"apc": return "res://assets/meta_units/vehicle_apc_topdown.png"
+		"cannon_fixed": return "res://assets/meta_units/cannon_fixed.png"
+		"cannon_mobile": return "res://assets/meta_units/cannon_mobile.png"
+		"howitzer_m777": return "res://assets/meta_units/howitzer_m777.png"
+		"mortar_team": return "res://assets/meta_units/mortar_team.png"
+		"missile_launcher_fixed": return "res://assets/meta_units/missile_launcher_fixed.png"
+		"missile_launcher_mobile": return "res://assets/meta_units/missile_launcher_mobile.png"
+		"mlrs_rocket_launcher": return "res://assets/meta_units/mlrs_rocket_launcher.png"
+		"bomber": return "res://assets/meta_units/bomber_aircraft.png"
+		"transport_aircraft": return "res://assets/meta_units/transport_aircraft.png"
+		"fighter": return "res://assets/meta_units/fighter_aircraft.png"
+	match unit_type.category:
+		UnitType.Category.INFANTRY:
+			return "res://assets/meta_units/infantry_topdown.png"
+		UnitType.Category.SNIPER:
+			return "res://assets/sprites/units/sniper.png"
+		UnitType.Category.VEHICLE:
+			return "res://assets/meta_units/vehicle_apc_topdown.png"
+		UnitType.Category.TANK:
+			return "res://assets/meta_units/tank_final.png"
+		UnitType.Category.ARTILLERY:
+			return "res://assets/meta_units/artillery_topdown.png"
+		UnitType.Category.AIR_DEFENSE:
+			return "res://assets/meta_units/airdefense_topdown.png"
+		UnitType.Category.AIRCRAFT:
+			return "res://assets/meta_units/aircraft_fighter_topdown.png"
+		UnitType.Category.HELICOPTER:
+			return "res://assets/meta_units/helicopter_topdown.png"
+	return ""
+
+
+func _add_meta_asset_sprite() -> bool:
+	var asset_path := _meta_asset_path()
+	if asset_path.is_empty():
+		return false
+	var image := Image.load_from_file(ProjectSettings.globalize_path(asset_path))
+	if image == null or image.is_empty():
+		return false
+	var texture := ImageTexture.create_from_image(image)
+	if texture == null:
+		return false
+	var sprite := Sprite3D.new()
+	sprite.name = "MetaAssetSprite"
+	sprite.texture = texture
+	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sprite.shaded = true
+	sprite.no_depth_test = false
+	sprite.pixel_size = 0.00105
+	sprite.position = Vector3(0, 1.15, 0)
+	if unit_type.category == UnitType.Category.SNIPER:
+		sprite.pixel_size = 0.0032
+		sprite.position.y = 0.72
+	visual_model.add_child(sprite)
+	return true
 
 
 func _box(size: Vector3) -> BoxMesh:

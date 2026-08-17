@@ -23,6 +23,18 @@ func _register_defaults() -> void:
 	_register("aircraft", _make("Aircraft", UnitType.Category.AIRCRAFT, 70, 0, 25, 30, 45, 22.0, 1.0, 5.0, {"domain": UnitType.Domain.AIR, "alt": 14.0, "can_air": true}))
 	_register("helicopter", _make("Helicopter", UnitType.Category.HELICOPTER, 90, 0, 18, 26, 40, 16.0, 1.2, 4.0, {"domain": UnitType.Domain.AIR, "alt": 10.0, "can_air": true}))
 	_register("destroyer", _make("Destroyer", UnitType.Category.VEHICLE, 400, 8, 30, 32, 38, 10.0, 0.8, 4.0, {"domain": UnitType.Domain.NAVAL}))
+	_register("humvee", _make("Humvee", UnitType.Category.VEHICLE, 105, 2, 14, 20, 34, 14.0, 0.7, 4.0))
+	_register("apc", _make("APC", UnitType.Category.VEHICLE, 190, 7, 18, 24, 34, 10.0, 0.9, 3.5))
+	_register("cannon_fixed", _make("Fixed Cannon", UnitType.Category.ARTILLERY, 140, 5, 42, 52, 32, 0.0, 1.4, 1.0, {"indirect": true}))
+	_register("cannon_mobile", _make("Mobile Cannon", UnitType.Category.ARTILLERY, 155, 6, 40, 48, 32, 5.0, 1.3, 1.8, {"indirect": true}))
+	_register("howitzer_m777", _make("M777 Howitzer", UnitType.Category.ARTILLERY, 125, 3, 52, 62, 36, 3.0, 1.1, 1.5, {"indirect": true}))
+	_register("mortar_team", _make("Mortar Team", UnitType.Category.ARTILLERY, 75, 0, 30, 42, 28, 4.0, 0.6, 2.5, {"indirect": true}))
+	_register("missile_launcher_fixed", _make("Fixed Missile Launcher", UnitType.Category.ARTILLERY, 180, 8, 70, 80, 44, 0.0, 1.5, 1.0, {"indirect": true}))
+	_register("missile_launcher_mobile", _make("Mobile Missile Launcher", UnitType.Category.ARTILLERY, 210, 8, 65, 74, 42, 6.0, 1.4, 1.6, {"indirect": true}))
+	_register("mlrs_rocket_launcher", _make("MLRS Rocket Launcher", UnitType.Category.ARTILLERY, 230, 9, 58, 58, 38, 7.0, 1.5, 1.8, {"indirect": true}))
+	_register("bomber", _make("Bomber", UnitType.Category.AIRCRAFT, 160, 0, 80, 46, 52, 18.0, 1.3, 4.0, {"domain": UnitType.Domain.AIR, "alt": 16.0, "can_air": true}))
+	_register("transport_aircraft", _make("Transport Aircraft", UnitType.Category.AIRCRAFT, 190, 0, 8, 18, 48, 15.0, 1.6, 3.0, {"domain": UnitType.Domain.AIR, "alt": 15.0, "can_air": true}))
+	_register("fighter", _make("Fighter", UnitType.Category.AIRCRAFT, 95, 0, 34, 40, 58, 24.0, 0.9, 5.0, {"domain": UnitType.Domain.AIR, "alt": 14.0, "can_air": true}))
 
 
 func _make(
@@ -144,6 +156,16 @@ func cost_of(key: String) -> Dictionary:
 			return {Economy.R.MANPOWER: 25, Economy.R.FUEL: 50, Economy.R.MATERIALS: 70}
 		"destroyer":
 			return {Economy.R.MANPOWER: 40, Economy.R.FUEL: 60, Economy.R.MATERIALS: 120}
+		"humvee":
+			return {Economy.R.MANPOWER: 30, Economy.R.FUEL: 25, Economy.R.MATERIALS: 55}
+		"apc":
+			return {Economy.R.MANPOWER: 45, Economy.R.FUEL: 30, Economy.R.MATERIALS: 80}
+		"cannon_fixed", "cannon_mobile", "howitzer_m777", "mortar_team":
+			return {Economy.R.MANPOWER: 30, Economy.R.FUEL: 10, Economy.R.MATERIALS: 75}
+		"missile_launcher_fixed", "missile_launcher_mobile", "mlrs_rocket_launcher":
+			return {Economy.R.MANPOWER: 35, Economy.R.FUEL: 25, Economy.R.MATERIALS: 110}
+		"bomber", "transport_aircraft", "fighter":
+			return {Economy.R.MANPOWER: 30, Economy.R.FUEL: 65, Economy.R.MATERIALS: 100}
 	return {Economy.R.MANPOWER: 50, Economy.R.MATERIALS: 20}
 
 

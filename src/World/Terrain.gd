@@ -190,10 +190,11 @@ func _build_ground() -> void:
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = false
 	mat.albedo_color = Color.WHITE
-	mat.albedo_texture = load("res://assets/textures/terrain/grass.png")
+	mat.albedo_texture = _load_texture("res://assets/textures/terrain/grass.png")
 	mat.normal_enabled = true
-	mat.normal_texture = load("res://assets/textures/terrain/grass_normal.png")
-	mat.roughness_texture = load("res://assets/textures/terrain/grass_roughness.png")
+	mat.normal_texture = _load_texture("res://assets/textures/terrain/grass_normal.png")
+	mat.roughness_texture = _load_texture("res://assets/textures/terrain/grass_roughness.png")
+
 	mat.roughness = 0.88
 	mat.metallic = 0.0
 	mat.uv1_scale = Vector3(7.0, 7.0, 7.0)
@@ -232,10 +233,11 @@ func _build_water() -> void:
 	_water_mesh.mesh = st.commit()
 	_water_mesh.cast_shadow = 0
 	var wmat := StandardMaterial3D.new()
-	wmat.albedo_texture = load("res://assets/textures/terrain/water.png")
+	wmat.albedo_texture = _load_texture("res://assets/textures/terrain/water.png")
 	wmat.normal_enabled = true
-	wmat.normal_texture = load("res://assets/textures/terrain/water_normal.png")
-	wmat.roughness_texture = load("res://assets/textures/terrain/water_roughness.png")
+	wmat.normal_texture = _load_texture("res://assets/textures/terrain/water_normal.png")
+	wmat.roughness_texture = _load_texture("res://assets/textures/terrain/water_roughness.png")
+
 	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	wmat.albedo_color = Color(0.28, 0.55, 0.82, 0.82)
 	wmat.roughness = 0.18
@@ -277,15 +279,22 @@ func _build_roads() -> void:
 	_road_mesh.mesh = st.commit()
 	_road_mesh.cast_shadow = 0
 	var rmat := StandardMaterial3D.new()
-	rmat.albedo_texture = load("res://assets/textures/terrain/road.png")
+	rmat.albedo_texture = _load_texture("res://assets/textures/terrain/road.png")
 	rmat.normal_enabled = true
-	rmat.normal_texture = load("res://assets/textures/terrain/road_normal.png")
-	rmat.roughness_texture = load("res://assets/textures/terrain/road_roughness.png")
+	rmat.normal_texture = _load_texture("res://assets/textures/terrain/road_normal.png")
+	rmat.roughness_texture = _load_texture("res://assets/textures/terrain/road_roughness.png")
 	rmat.albedo_color = Color(0.72, 0.70, 0.66)
 	rmat.roughness = 0.92
 	rmat.uv1_scale = Vector3(5.0, 5.0, 5.0)
 	_road_mesh.material_override = rmat
 	add_child(_road_mesh)
+
+
+func _load_texture(path: String) -> Texture2D:
+	var image := Image.load_from_file(ProjectSettings.globalize_path(path))
+	if image == null or image.is_empty():
+		return null
+	return ImageTexture.create_from_image(image)
 
 
 func _elevation_color(h: float, md: MapData) -> Color:

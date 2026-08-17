@@ -25,8 +25,10 @@ var waters: Array = []  # Array of PackedVector2Array (xz loops)
 var roads: Array = []  # Array of PackedVector2Array (xz polylines)
 # Bridges: position + radius (world xz) where water becomes passable.
 var bridges: Array = []  # Array of {position: Vector2, radius: float}
-# Mountains: height threshold above which ground is impassable.
-var mountain_height: float = 18.0
+# Mountains: height threshold above which ground is impassable. The terrain
+# pass is intentionally flatter than the original 32-unit range, so this
+# threshold stays below the procedural ridge peak.
+var mountain_height: float = 12.0
 # Plateaus: gentle high ground (visual only; passable).
 var plateau_height: float = 8.0
 
