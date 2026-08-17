@@ -19,6 +19,7 @@ func _make_world_with(bodies: Array) -> World:
 	w.units_root = root
 	for b in bodies:
 		root.add_child(b)
+		w.register_unit(b)
 	return w
 
 
@@ -140,3 +141,18 @@ func test_counter_intel_tick_purges_deception():
 			break
 		Espionage.tick(1.0)
 	assert_false(Intelligence.has_deception(blue))
+
+
+func test_reveal_from_agent_uses_spatial_radius_only():
+	# Phase 10c+ wiring: reveal_from_agent reads the World spatial index and
+	# only reveals enemies within the query radius, ignoring out-of-radius ones.
+	var blue := Faction.make("blue", "Blue", Color.BLUE, ["red"], true)
+	var red := Faction.make("red", "Red", Color.RED, ["blue"], false)
+	var near := _make_unit(red, Vector3(10, 0, 0))      # within radius
+	var far := _make_unit(red, Vector3(500, 0, 0))      # well outside radius
+	var w := _make_world_with([_make_unit(blue, Vector3(0, 0, 0)), near, far])
+	Intelligence.world = w
+	var revealed: int = Intelligence.reveal_from_agent(blue, Vector3(10, 0, 0), 40.0, 0.6)
+	assert_eq(revealed, 1)
+	assert_not_null(Intelligence.last_known_position(blue, near))
+	assert_null(Intelligence.last_known_position(blue, far))

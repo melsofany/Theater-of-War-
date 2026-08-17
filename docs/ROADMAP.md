@@ -286,6 +286,16 @@ agent-to-agent API; the repo is the integration layer).
   and the Phase 10b suite (modloader, register_from_dict incl. naval/air
   defaults, spatial grid, balance, chunk math, networking states).
 
+### 10c+ (in progress)
+
+- **SpatialGrid wired into the intelligence hot path**: `Intelligence.reveal_from_agent`
+  now reads the World spatial index (`World.query_units_radius`) instead of
+  scanning every unit each tick, bounding the agent-surveillance scan by the
+  query radius. `World` exposes public `register_unit`/`unregister_unit` hooks
+  for manual/test-driven world construction. Tests: 126 passing / 300 asserts
+  (the previously pending/risky bridge-passability test now asserts, and a new
+  spatial-radius test proves the wiring).
+
 ### Future work
 
 - Streaming terrain rendering wired to ChunkManager; campaigns across theaters.
@@ -314,4 +324,4 @@ agent-to-agent API; the repo is the integration layer).
 | 10 — Naval/Air/Campaign/Balance (subset) | [x] |
 | 10b — Modding/Perf/Balance/Streaming/Multiplayer/Audio (foundation) | [x] |
 | 10c — Spatial/Networking/Mod integration + asset pipeline/wiring | [x] |
-| 10c+ — Streaming terrain rendering, netcode replication, full art/audio pass | [ ] |
+| 10c+ — Streaming terrain rendering, netcode replication, full art/audio pass | [~] |

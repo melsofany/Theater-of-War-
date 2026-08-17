@@ -20,11 +20,13 @@ func test_generator_has_features():
 
 func test_bridge_at_river_crossing_is_passable():
 	var md := TerrainGenerator.new().generate()
+	# At least one bridge is generated, and every bridge position must be
+	# passable — a bridge cancels the water-impassable rule, so is_impassable
+	# must be false at each bridge regardless of whether it sits in water.
+	assert_true(md.bridges.size() >= 1)
 	for b in md.bridges:
 		var bp: Vector2 = b["position"]
-		# Even if the bridge sits in water, it must be passable.
-		if md.is_water(bp.x, bp.y):
-			assert_false(md.is_impassable(bp.x, bp.y))
+		assert_false(md.is_impassable(bp.x, bp.y))
 
 
 func test_some_mountains_exist():

@@ -83,6 +83,21 @@ func _register_spatial_entity(node: Node) -> void:
 		spatial_grid.insert(node)
 
 
+## Public spatial-index hooks. Production units are indexed automatically via the
+## units_root tree signals (and spawn_unit); callers that build a World manually
+## (e.g. tests) should register units through here so radius queries are correct.
+func register_unit(unit: Unit) -> void:
+	if unit == null:
+		return
+	spatial_grid.insert(unit)
+
+
+func unregister_unit(unit: Unit) -> void:
+	if unit == null:
+		return
+	spatial_grid.remove(unit)
+
+
 func update_unit_spatial(unit: Unit, old_pos: Vector3) -> void:
 	spatial_grid.update(unit, old_pos)
 

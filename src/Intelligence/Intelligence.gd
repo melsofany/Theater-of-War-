@@ -143,20 +143,21 @@ func add_contact(faction: Faction, key: int, pos: Vector3, ut: UnitType,
 
 ## Agent surveillance: reveal real enemy units within `radius` of `pos` to
 ## `faction` as medium-confidence contacts (bypasses normal sight range).
+## Uses the World spatial index (SpatialGrid) so the scan is bounded by the
+## query radius instead of touching every unit each tick.
 func reveal_from_agent(faction: Faction, pos: Vector3, radius: float,
 		confidence: float = 0.6) -> int:
 	if faction == null or world == null:
 		return 0
 	var revealed: int = 0
-	for enemy in world.get_units():
+	for enemy in world.query_units_radius(pos, radius):
 		if enemy.faction == null or enemy.faction.name == faction.name:
 			continue
 		if not enemy.alive:
 			continue
-		if enemy.global_position.distance_to(pos) <= radius:
-			add_contact(faction, enemy.get_instance_id(), enemy.global_position,
-					enemy.unit_type, confidence, false)
-			revealed += 1
+		add_contact(faction, enemy.get_instance_id(), enemy.global_position,
+				enemy.unit_type, confidence, false)
+		revealed += 1
 	return revealed
 
 
