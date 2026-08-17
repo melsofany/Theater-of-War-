@@ -15,6 +15,7 @@ func _ready() -> void:
 
 func _register_defaults() -> void:
 	_register("infantry", _make("Infantry", UnitType.Category.INFANTRY, 80, 1, 8, 18, 30, 7.0, 0.6, 4.0))
+	_register("sniper", _make("Sniper", UnitType.Category.SNIPER, 55, 0, 32, 65, 58, 6.0, 0.45, 5.0))
 	_register("vehicle", _make("Vehicle", UnitType.Category.VEHICLE, 120, 3, 12, 22, 32, 12.0, 0.6, 4.0))
 	_register("tank", _make("Tank", UnitType.Category.TANK, 300, 12, 35, 24, 30, 9.0, 1.0, 3.5))
 	_register("artillery", _make("Artillery", UnitType.Category.ARTILLERY, 90, 2, 60, 55, 28, 4.0, 2.0, 2.0, {"indirect": true}))
@@ -101,6 +102,7 @@ func register_from_dict(key: String, d: Dictionary) -> UnitType:
 static func _category_from_name(n: String) -> UnitType.Category:
 	match n.to_upper():
 		"INFANTRY": return UnitType.Category.INFANTRY
+		"SNIPER": return UnitType.Category.SNIPER
 		"VEHICLE": return UnitType.Category.VEHICLE
 		"TANK": return UnitType.Category.TANK
 		"ARTILLERY": return UnitType.Category.ARTILLERY
@@ -126,6 +128,8 @@ func cost_of(key: String) -> Dictionary:
 	match key:
 		"infantry":
 			return {Economy.R.MANPOWER: 50, Economy.R.MATERIALS: 20}
+		"sniper":
+			return {Economy.R.MANPOWER: 70, Economy.R.MATERIALS: 35}
 		"vehicle":
 			return {Economy.R.MANPOWER: 30, Economy.R.FUEL: 20, Economy.R.MATERIALS: 50}
 		"tank":

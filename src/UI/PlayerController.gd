@@ -118,8 +118,8 @@ func _seed_battlefield() -> void:
 		b.produced_unit_key = "infantry"
 
 	if unit_scene and world:
-		# A mixed player force: two infantry + a tank.
-		var keys := ["infantry", "infantry", "tank"]
+		# A mixed player force showcasing infantry, sniper and tank visuals.
+		var keys := ["infantry", "sniper", "tank"]
 		for i in keys.size():
 			var u := unit_scene.instantiate() as Unit
 			world.units_root.add_child(u)
@@ -366,6 +366,9 @@ func _apply_fog_of_war() -> void:
 		# Keep the unit active (it still moves/fights) but hide its visuals.
 		if u.body_mesh:
 			u.body_mesh.visible = seen
+		if u.visual_model:
+			u.visual_model.visible = seen
+
 		if u.selection_ring:
 			u.selection_ring.visible = seen and u.selected
 		if u.health_bar:
