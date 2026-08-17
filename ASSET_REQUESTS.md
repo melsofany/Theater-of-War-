@@ -56,12 +56,39 @@ Each request is self-contained so Manus needs nothing else.
 
 ---
 
+## A-005 — Expanded unit icon pack
+
+- [x] produced
+- **Paths:** `assets/icons/units/<key>.png`
+- **Unit keys:**
+  - `mortar_team` — فريق هاون.
+  - `rpg_team` — فريق RPG مضاد للدروع.
+  - `heavy_machine_gun_team` — فريق رشاش ثقيل عيار نصف بوصة.
+  - `fighter_light` — مقاتلة خفيفة متعددة المهام.
+  - `fighter_heavy` — مقاتلة ثقيلة/اعتراضية.
+  - `bomber` — قاذفة بعيدة المدى.
+  - `transport_aircraft` — طائرة نقل عسكرية.
+  - `hummer` — عربة همر/مركبة تكتيكية خفيفة.
+  - `apc` — ناقلة جنود مدرعة.
+  - `ifv` — مركبة قتال مشاة.
+  - `mlrs` — راجمة صواريخ متعددة.
+  - `rocket_launcher` — منصة إطلاق صواريخ موجهة.
+  - `atgm_launcher` — منصة صواريخ مضادة للدروع.
+  - `field_gun` — مدفع ميداني مقطور.
+  - `self_propelled_gun` — مدفع ذاتي الحركة.
+  - `anti_aircraft_gun` — مدفع مضاد للطائرات.
+- **Spec:** 64×64 RGBA PNG, transparent background, faction-neutral white tactical outline, readable at small size, matching the existing A-003 icon style. The quota-limited remainder uses deterministic vector fallback icons with the same contract.
+- **Acceptance:** every listed file exists and loads at `res://assets/icons/units/<key>.png`; no source files under `src/` or `tests/` are modified on the assets branch.
+
+---
+
 ## Notes for Manus
 
 - Work only on the `assets` branch.
 - Do not modify anything under `src/` or `tests/` — OpenHands wires assets in.
 - After committing, leave a one-line note at the bottom of this file:
   `Manus: produced A-001, A-002 (commit <sha>) on <date>`.
-Manus: produced A-001, A-002, A-003, A-004 (commit b74dcc77f440535e9ac2dd9e87666d6580c7144e) on 2026-08-17.
+Manus: produced A-001, A-002, A-003, A-004 (commit 6b3d1b1fa9db4ef76833ada6a9ced32bd16b0e69) on 2026-08-17.
+Manus: produced A-005 (commit 305cf5b52b94f27b3e3708371f01c87dd7687c31) on 2026-08-17.
 
 - If a request is ambiguous, leave a question in a commit message, do not guess.
