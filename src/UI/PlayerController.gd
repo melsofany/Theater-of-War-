@@ -20,6 +20,11 @@ var _enemy_faction: Faction
 
 
 func _ready() -> void:
+	# Resolve scene references explicitly for direct scene instantiation and runtime scene changes.
+	if world == null:
+		world = get_node_or_null("../World") as World
+	if camera == null:
+		camera = get_node_or_null("../Camera3D") as RTSCamera
 	_player_faction = Faction.make("blue", "Blue Force", Color(0.2, 0.4, 0.9), ["red"], true)
 	_enemy_faction = Faction.make("red", "Red Force", Color(0.85, 0.2, 0.2), ["blue"], false)
 	if not command_marker_scene:
