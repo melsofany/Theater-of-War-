@@ -16,15 +16,23 @@ class_name Minimap
 @export var camera_color: Color = Color(1.0, 1.0, 1.0, 0.5)
 @export var world_bounds: Rect2 = Rect2(-100, -100, 200, 200)
 @export var dot_radius: float = 2.5
+var map_texture: Texture2D
+@export var map_texture_opacity: float = 0.78
+const META_TACTICAL_MAP_PATH := "res://assets/maps/meta_package/theater_of_war_tactical_map.webp"
 
 
 func _ready() -> void:
-	pass
+	var image := Image.load_from_file(META_TACTICAL_MAP_PATH)
+	if image and not image.is_empty():
+		map_texture = ImageTexture.create_from_image(image)
+	queue_redraw()
 
 
 func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size)
 	draw_rect(r, bg_color, true)
+	if map_texture:
+		draw_texture_rect(map_texture, r, false, Color(1.0, 1.0, 1.0, map_texture_opacity))
 	draw_rect(r, border_color, false, 1.5)
 	if not world:
 		return
