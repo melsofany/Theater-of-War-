@@ -1,0 +1,16 @@
+[gd_scene format=3]
+[node name="MountainVillage" type="Node3D"]
+[node name="HousesOnSlope" type="Node3D" parent="."]
+[node name="House_A" type="MeshInstance3D" parent="HousesOnSlope"]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,3,0)
+mesh = SubResource(1)
+[node name="House_B" type="MeshInstance3D" parent="HousesOnSlope"]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,10,5,5)
+mesh = SubResource(1)
+[node name="ObservationPost" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,15,8,15)
+mesh = SubResource(2)
+[sub_resource type="BoxMesh" id=1]
+size = Vector3(6,3,6)
+[sub_resource type="BoxMesh" id=2]
+size = Vector3(3,4,3)

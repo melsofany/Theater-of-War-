@@ -1,0 +1,22 @@
+[gd_scene format=3]
+[node name="Oasis" type="Node3D"]
+[node name="Water" type="MeshInstance3D" parent="."]
+mesh = SubResource(1)
+[node name="Palm1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,8,3,5)
+mesh = SubResource(2)
+[node name="Palm2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,-7,2.5,-4)
+mesh = SubResource(2)
+[node name="VillageHuts" type="Node3D" parent="."]
+[node name="Hut1" type="MeshInstance3D" parent="VillageHuts"]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,15,1,10)
+mesh = SubResource(3)
+[sub_resource type="PlaneMesh" id=1]
+size = Vector2(20,20)
+[sub_resource type="CylinderMesh" id=2]
+top_radius = 0.3
+bottom_radius = 0.3
+height = 6
+[sub_resource type="BoxMesh" id=3]
+size = Vector3(4,2,4)

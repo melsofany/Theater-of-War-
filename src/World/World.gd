@@ -47,6 +47,7 @@ func _build_features() -> void:
 		return
 	for c in features_root.get_children():
 		c.queue_free()
+	var cbd_scene: PackedScene = load("res://scenes/districts/CBD_Glass_District.tscn")
 	for city in map_data.cities:
 		var node: City = null
 		if city_scene:
@@ -58,14 +59,13 @@ func _build_features() -> void:
 		pos.y = map_data.height_at(pos.x, pos.z)
 		node.global_position = pos
 		node.city_name = city["name"]
-		# Replace the old placeholder cube with an original procedural modern district.
 		if node.body_mesh:
 			node.body_mesh.visible = false
-		var modern_city := ModernCity.new()
-		modern_city.city_name = city["name"]
-		modern_city.city_seed = hash(city["name"])
-		features_root.add_child(modern_city)
-		modern_city.global_position = pos
+		if cbd_scene:
+			var real_city: Node3D = cbd_scene.instantiate()
+			real_city.name = "MetaRealCBD_" + str(city["name"])
+			features_root.add_child(real_city)
+			real_city.global_position = pos
 
 	for z in map_data.zones:
 		var node: StrategicZone = null

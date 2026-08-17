@@ -1,0 +1,25 @@
+[gd_scene format=3]
+[node name="GasStationDesert" type="Node3D"]
+[node name="Canopy" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,4,0)
+mesh = SubResource(1)
+[node name="Shop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,10,1.5,0)
+mesh = SubResource(2)
+[node name="Pump1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,-2,1,0)
+mesh = SubResource(3)
+[node name="Pump2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,2,1,0)
+mesh = SubResource(3)
+[node name="FuelTanks" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,-1,10)
+mesh = SubResource(4)
+[sub_resource type="BoxMesh" id=1]
+size = Vector3(12,0.5,8)
+[sub_resource type="BoxMesh" id=2]
+size = Vector3(6,3,8)
+[sub_resource type="BoxMesh" id=3]
+size = Vector3(0.8,2,0.8)
+[sub_resource type="CylinderMesh" id=4]
+height = 3
