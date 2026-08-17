@@ -30,16 +30,16 @@ func generate(map_size: int = 96, cell: float = 2.0) -> MapData:
 		for gx in map_size:
 			var n := _noise.get_noise_2d(float(gx), float(gz))
 			# n in [-1,1] -> [0, ~24]
-			var h := (n * 0.5 + 0.5) * 22.0
+			var h := (n * 0.5 + 0.5) * 10.0
 			# Mountain ridge along x ~ 30% of the map.
 			var ridge := absf(float(gx) - float(map_size) * 0.3)
 			if ridge < 6.0:
-				h = maxf(h, 26.0 - ridge * 2.5)
+				h = maxf(h, 13.0 - ridge * 1.2)
 			# Plateau band along z ~ 70%.
 			var plat := absf(float(gz) - float(map_size) * 0.7)
 			if plat < 10.0:
-				h = maxf(h, 9.0)
-			md.set_height_at_grid(gx, gz, clampf(h, 0.0, 32.0))
+				h = maxf(h, 5.0)
+			md.set_height_at_grid(gx, gz, clampf(h, 0.0, 16.0))
 
 	# A winding river crossing the map north-south near x ~ 50%.
 	var river := PackedVector2Array()
