@@ -204,3 +204,130 @@ func test_networking_join_enters_connecting():
 	assert_eq(Networking.state, Networking.State.CONNECTING)
 	Networking.disconnect_peer()
 	assert_eq(Networking.state, Networking.State.OFFLINE)
+
+
+# --- Networking replication (10c+) ---------------------------------------
+
+func _make_world_for_net(bodies: Array) -> World:
+	var w := World.new()
+	add_child(w)
+	var root := Node3D.new()
+	w.add_child(root)
+	w.units_root = root
+	for b in bodies:
+		root.add_child(b)
+		w.register_unit(b)
+	return w
+
+
+func test_networking_snapshot_build_roundtrip():
+	# Host builds a snapshot; applying it to a parallel world with same-named
+	# units mirrors the deterministic fields.
+	Networking.disconnect_peer()
+	var blue := Faction.make("blue", "Blue", Color.BLUE, ["red"], true)
+	var host_u: Unit = load("res://src/Units/Unit.tscn").instantiate()
+	host_u.unit_type = UnitFactory.get_type("infantry")
+	host_u.faction = blue
+	host_u.global_position = Vector3(10, 0, 10)
+	var host_world := _make_world_for_net([host_u])
+	# Set deterministic fields AFTER the unit is in the tree, since _ready resets
+	# health/fuel to the scene defaults.
+	host_u.health = 42.0
+	host_u.fuel = 7.0
+	Networking.attach_world(host_world)
+	var snap: Array = Networking.build_snapshot()
+	assert_eq(snap.size(), 1)
+	var entry: Dictionary = snap[0]
+	assert_eq(entry.get("name"), str(host_u.name))
+	assert_almost_eq(float(entry.get("health")), 42.0, 0.01)
+	# Client world: a unit with the SAME node name (matching relies on name).
+	var client_u: Unit = load("res://src/Units/Unit.tscn").instantiate()
+	client_u.unit_type = UnitFactory.get_type("infantry")
+	client_u.faction = blue
+	client_u.global_position = Vector3(0, 0, 0)
+	var client_world := _make_world_for_net([client_u])
+	client_u.name = host_u.name
+	Networking.replicated_world = client_world  # direct attach for the apply path
+	var applied: int = Networking._apply_snapshot(snap)
+	assert_eq(applied, 1)
+	assert_almost_eq(client_u.health, 42.0, 0.01)
+	assert_almost_eq(client_u.fuel, 7.0, 0.01)
+	assert_eq(client_u.global_position, Vector3(10, 0, 10))
+	Networking.detach_world(host_world)
+	host_world.queue_free()
+	client_world.queue_free()
+
+
+func test_networking_snapshot_requests_spawn_for_missing_unit():
+	Networking.disconnect_peer()
+	var blue := Faction.make("blue", "Blue", Color.BLUE, ["red"], true)
+	var host_u: Unit = load("res://src/Units/Unit.tscn").instantiate()
+	host_u.unit_type = UnitFactory.get_type("infantry")
+	host_u.faction = blue
+	host_u.global_position = Vector3(5, 0, 5)
+	var host_world := _make_world_for_net([host_u])
+	Networking.attach_world(host_world)
+	var snap: Array = Networking.build_snapshot()
+	# Client world is EMPTY -> the entry has no matching local unit.
+	var client_world := _make_world_for_net([])
+	Networking.replicated_world = client_world
+	var requested: Array = []
+	Networking.spawn_requested.connect(func(entry: Dictionary): requested.append(entry))
+	var applied: int = Networking._apply_snapshot(snap)
+	assert_eq(applied, 0)
+	assert_eq(requested.size(), 1)
+	Networking.detach_world(host_world)
+	host_world.queue_free()
+	client_world.queue_free()
+
+
+# --- Streaming terrain (10c+) ---------------------------------------------
+
+func _make_streaming_terrain(cs: float, vr: float) -> Terrain:
+	var t := Terrain.new()
+	t.map_data = TerrainGenerator.new().generate()
+	t.streaming = true
+	t.chunk_size = cs
+	t.stream_view_radius = vr
+	add_child(t)
+	return t
+
+
+func test_streaming_terrain_loads_chunks_around_focus():
+	var t := _make_streaming_terrain(64.0, 96.0)
+	# Centre focus -> ChunkManager should have activated a non-empty set and
+	# Terrain should have built matching meshes.
+	assert_true(t.active_chunk_count() >= 1)
+	# Moving the focus far away should unload the centre chunks.
+	t.stream_focus = Vector3(9000, 0, 9000)
+	t._stream_update()
+	var origin_key := ChunkManager.chunk_key_of(Vector3(0, 0, 0), 64.0)
+	assert_false(t.is_chunk_loaded(origin_key))
+	t.queue_free()
+
+
+func test_streaming_terrain_unloads_when_focus_moves():
+	var t := _make_streaming_terrain(64.0, 96.0)
+	var first := t.active_chunk_count()
+	assert_true(first >= 1)
+	var first_key := ChunkManager.chunk_key_of(t.stream_focus, 64.0)
+	assert_true(t.is_chunk_loaded(first_key))
+	# Move focus several chunks over.
+	t.stream_focus = Vector3(400, 0, 400)
+	t._stream_update()
+	assert_false(t.is_chunk_loaded(first_key))
+	t.queue_free()
+
+
+func test_streaming_terrain_chunk_mesh_has_geometry():
+	# A built chunk mesh must actually contain surfaces (not an empty mesh).
+	var t := _make_streaming_terrain(64.0, 96.0)
+	assert_true(t.active_chunk_count() >= 1)
+	var any_surf := false
+	for mi in t.get_children():
+		if mi is MeshInstance3D and mi.mesh != null:
+			if mi.mesh.get_surface_count() > 0:
+				any_surf = true
+				break
+	assert_true(any_surf)
+	t.queue_free()

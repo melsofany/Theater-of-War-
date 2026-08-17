@@ -16,9 +16,11 @@ one tree. No pull requests are opened; branches are pushed directly.
   Campaign.
 - Tests: GUT, `tests/*.gd`, run via
   `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit`.
-  Latest: 126 passing / 300 asserts (0 failing, 0 pending/risky) — verified on
-  the consolidated branch after the Phase 10c merge + the first 10c+ item
-  (SpatialGrid wired into Intelligence.reveal_from_agent).
+  Latest: 134 passing / 324 asserts (0 failing, 0 pending/risky) — verified on
+  the consolidated branch after the Phase 10c merge + the first 10c+ batch
+  (SpatialGrid wired into intelligence hot path; netcode state replication
+  made testable with dynamic-spawn detection; streaming terrain rendering
+  wired to ChunkManager; deterministic balance regression guard).
 - Scene validation: `godot --headless --script tools/validate_project.gd`.
 - Godot binary expected at `$HOME/godot/godot` (add to PATH).
 
@@ -44,6 +46,12 @@ using `\u2014` / `\u2192` literals to avoid str_replace mismatches.
 
 Phases 0–10c complete (the two parallel 10c tracks are merged on
 `integration/consolidated`, now also `Main`). 10c+ in progress: SpatialGrid
-wired into the intelligence hot path (`reveal_from_agent`). Next: streaming
-terrain rendering wired to ChunkManager, multiplayer state replication, full
-art/audio pass, balance playtesting.
+wired into the intelligence hot path (DONE), netcode state replication made
+testable + dynamic-spawn detection (DONE), streaming terrain rendering wired
+to ChunkManager (DONE), deterministic balance regression guard (DONE). Next:
+full art/audio pass (external asset generation), campaigns, true lockstep
+multiplayer sim, instanced rendering/LOD, balance playtesting.
+- Art/audio hand-off prompt for an external asset agent (Manus) is at
+  `docs/MANUS_ASSETS_PROMPT.md` — every path it lists is already referenced by
+  the game's runtime loaders (icons, sprites, terrain textures, UI, SFX,
+  music). Deferred to the end per the user's instruction.

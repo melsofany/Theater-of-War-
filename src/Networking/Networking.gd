@@ -16,6 +16,9 @@ var replicated_world: World = null
 var _sync_elapsed: float = 0.0
 signal state_changed(new_state: int)
 signal snapshot_applied(unit_count: int)
+## Emitted on a client when a snapshot entry has no matching local unit, so the
+## client can request/construct the spawn. `entry` is the raw snapshot dict.
+signal spawn_requested(entry: Dictionary)
 
 
 func host(port: int = 12000, max_clients: int = 4) -> bool:
@@ -121,12 +124,22 @@ func _send_snapshot(snapshot: Array) -> void:
 	# call_remote prevents this method from applying the snapshot locally.
 	if is_server() or replicated_world == null:
 		return
+	var applied: int = _apply_snapshot(snapshot)
+	snapshot_applied.emit(applied)
+
+
+## Apply a host snapshot to the local world. Pure/testable (no RPC dependency):
+## updates matching units, and emits `spawn_requested` for entries with no
+## matching local unit so clients can mirror dynamic spawns. Returns the number
+## of units updated.
+func _apply_snapshot(snapshot: Array) -> int:
 	var applied: int = 0
 	for state_data in snapshot:
 		if not state_data is Dictionary:
 			continue
 		var unit := _find_unit(str(state_data.get("name", "")))
 		if unit == null:
+			spawn_requested.emit(state_data)
 			continue
 		unit.global_position = state_data.get("position", unit.global_position)
 		unit.global_rotation = state_data.get("rotation", unit.global_rotation)
@@ -138,7 +151,12 @@ func _send_snapshot(snapshot: Array) -> void:
 		unit.moving = bool(state_data.get("moving", unit.moving))
 		unit.call_deferred("_update_health_bar")
 		applied += 1
-	snapshot_applied.emit(applied)
+	return applied
+
+
+## Build a snapshot of the host's deterministic unit fields. Exposed for tests.
+func build_snapshot() -> Array:
+	return _build_snapshot()
 
 
 func _find_unit(unit_name: String) -> Unit:

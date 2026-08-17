@@ -10,6 +10,20 @@ class_name Terrain
 
 @export var map_data: MapData
 
+## Streaming (10c+): when true, ground is built as per-chunk meshes loaded/
+## unloaded around `stream_focus` via a ChunkManager, instead of one giant
+## mesh. Water/roads stay as whole-scene overlays (cheap, flat). Default false
+## preserves the original single-mesh build.
+@export var streaming: bool = false
+@export var chunk_size: float = 64.0
+@export var stream_view_radius: float = 160.0
+## World position to stream around. Set each frame (e.g. to the camera or the
+## player's average unit position); defaults to the map centre.
+var stream_focus: Vector3 = Vector3.ZERO
+var _chunk_manager: ChunkManager = null
+var _chunk_meshes: Dictionary = {}  # Vector2i -> MeshInstance3D
+var _ground_mat: StandardMaterial3D = null
+
 var _mesh_instance: MeshInstance3D
 var _body: StaticBody3D
 var _water_mesh: MeshInstance3D
@@ -19,6 +33,8 @@ var _road_mesh: MeshInstance3D
 func _ready() -> void:
 	if not map_data:
 		map_data = TerrainGenerator.new().generate()
+	# Default focus to the map centre so a fresh scene streams around the middle.
+	stream_focus = map_data.grid_to_world(map_data.size / 2, map_data.size / 2)
 	_build_terrain()
 
 
@@ -31,9 +47,112 @@ func set_map_data(md: MapData) -> void:
 func _build_terrain() -> void:
 	for c in get_children():
 		c.queue_free()
-	_build_ground()
+	_chunk_meshes.clear()
+	_chunk_manager = null
+	_ground_mat = StandardMaterial3D.new()
+	_ground_mat.vertex_color_use_as_albedo = true
+	_ground_mat.roughness = 0.95
+	_ground_mat.metalness = 0.0
+	if streaming:
+		_build_streaming_ground()
+	else:
+		_build_ground()
 	_build_water()
 	_build_roads()
+
+
+func _build_streaming_ground() -> void:
+	_chunk_manager = ChunkManager.new(chunk_size, stream_view_radius)
+	# Build the initial active set around the default focus.
+	_stream_update()
+
+
+## Build the ground mesh for a single chunk (the grid cells whose world xz fall
+## in `[key.x, key.x+1)*chunk_size` etc.) and register its MeshInstance3D.
+func _build_chunk_mesh(key: Vector2i) -> MeshInstance3D:
+	var md := map_data
+	var cell := md.cell
+	# World-space bounds for this chunk.
+	var x0 := float(key.x) * chunk_size
+	var z0 := float(key.y) * chunk_size
+	# Map world -> grid indices inclusive.
+	var g0 := md.world_to_grid(x0, z0)
+	var g1 := md.world_to_grid(x0 + chunk_size, z0 + chunk_size)
+	# Clamp to map; if entirely out of bounds, nothing to draw.
+	var gx_min := clampi(g0.x, 0, md.size - 1)
+	var gz_min := clampi(g0.y, 0, md.size - 1)
+	var gx_max := clampi(g1.x, 0, md.size - 1)
+	var gz_max := clampi(g1.y, 0, md.size - 1)
+	if gx_max <= gx_min or gz_max <= gz_min:
+		return null
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var local_origin := Vector3(x0, 0.0, z0)
+	for gz in range(gz_min, gz_max + 1):
+		for gx in range(gx_min, gx_max + 1):
+			st.set_uv(Vector2(float(gx) / float(md.size), float(gz) / float(md.size)))
+			var h := md.height_at_grid(gx, gz)
+			st.set_color(_elevation_color(h, md))
+			# Vertices stored in chunk-local space so the chunk can be placed at
+			# (x0, 0, z0) and share one material instance.
+			var w := md.grid_to_world(gx, gz)
+			st.add_vertex(w - local_origin)
+	# Two triangles per cell, indexed within this chunk's local vertex grid.
+	var w := gx_max - gx_min + 1
+	for gz in range(gz_max - gz_min):
+		for gx in range(gx_max - gx_min):
+			var a: int = gz * w + gx
+			var b: int = gz * w + gx + 1
+			var c: int = (gz + 1) * w + gx
+			var d: int = (gz + 1) * w + gx + 1
+			st.add_index(a)
+			st.add_index(c)
+			st.add_index(b)
+			st.add_index(b)
+			st.add_index(c)
+			st.add_index(d)
+	st.index()
+	st.generate_normals()
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.cast_shadow = 1
+	mi.material_override = _ground_mat
+	mi.position = local_origin
+	return mi
+
+
+## Load/unload chunk meshes to match the ChunkManager's desired set around the
+## current `stream_focus`. Public so tests/external code can drive a step.
+func _stream_update() -> Dictionary:
+	if _chunk_manager == null:
+		return {"loaded": [], "unloaded": [], "active": []}
+	var diff: Dictionary = _chunk_manager.update(stream_focus)
+	for key in diff.get("loaded", []):
+		if not _chunk_meshes.has(key):
+			var mi := _build_chunk_mesh(key)
+			if mi != null:
+				add_child(mi)
+				_chunk_meshes[key] = mi
+	for key in diff.get("unloaded", []):
+		var mi = _chunk_meshes.get(key)
+		if mi != null:
+			mi.queue_free()
+			_chunk_meshes.erase(key)
+	return {"loaded": diff.get("loaded", []), "unloaded": diff.get("unloaded", []),
+			"active": _chunk_meshes.keys()}
+
+
+func active_chunk_count() -> int:
+	return _chunk_meshes.size()
+
+
+func is_chunk_loaded(key: Vector2i) -> bool:
+	return _chunk_meshes.has(key)
+
+
+func _process(_delta: float) -> void:
+	if streaming and _chunk_manager != null:
+		_stream_update()
 
 
 func _build_ground() -> void:

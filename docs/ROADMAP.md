@@ -292,18 +292,37 @@ agent-to-agent API; the repo is the integration layer).
   now reads the World spatial index (`World.query_units_radius`) instead of
   scanning every unit each tick, bounding the agent-surveillance scan by the
   query radius. `World` exposes public `register_unit`/`unregister_unit` hooks
-  for manual/test-driven world construction. Tests: 126 passing / 300 asserts
-  (the previously pending/risky bridge-passability test now asserts, and a new
-  spatial-radius test proves the wiring).
+  for manual/test-driven world construction.
+- **Netcode state replication (testable + dynamic-spawn detection)**: extracted
+  the client snapshot-apply path into a pure `_apply_snapshot(snapshot) -> int`
+  (no RPC dependency), exposed `build_snapshot()` for tests, and added a
+  `spawn_requested` signal so a client can mirror a host's dynamic spawns
+  (snapshot entries with no matching local unit no longer silently drop).
+- **Streaming terrain rendering wired to ChunkManager**: `Terrain` gains an
+  opt-in `streaming` mode that builds per-chunk ground meshes and loads/unloads
+  them around `stream_focus` via a `ChunkManager` (replacing the one-giant-mesh
+  build for large worlds). Default `streaming=false` preserves the original
+  single-mesh behaviour; water/road overlays stay whole-scene (cheap, flat).
+- **Balance regression guard**: `tests/test_balance.gd` runs deterministic
+  mutual-fire duels (cooldowns advanced manually, no nav/physics/randomness)
+  to guard against accidental balance drift — a tank beats infantry 1v1,
+  artillery's higher damage beats infantry, and a mirror match is close (not
+  one-shot, no full-HP survivor).
+- **Tests**: 134 passing / 324 asserts (0 failing, 0 pending/risky) — verified
+  on the consolidated branch.
 
 ### Future work
 
-- Streaming terrain rendering wired to ChunkManager; campaigns across theaters.
-- Multiplayer state replication (unit sync, lockstep/deterministic sim).
-- Performance: instanced rendering, LOD, SpatialGrid wired into AI/intel hot paths.
+- Full art/audio pass (external asset generation): models, animations, SFX,
+  music. The hand-off prompt for an external asset agent (e.g. Manus) is
+  [`docs/MANUS_ASSETS_PROMPT.md`](MANUS_ASSETS_PROMPT.md) — every path it lists
+  is already referenced by the game's runtime loaders.
+- Campaigns across theaters.
+- True lockstep/deterministic multiplayer sim + bandwidth tuning (the current
+  netcode is snapshot replication; lockstep is the next step).
+- Performance: instanced rendering, LOD.
 - Modding: data-driven maps/buildings, mod loading from ZIP, mod manifest.
 - Balance pass: combat math tuning, economy curves, playtesting.
-- Art & audio: models, animations, SFX, music assets.
 
 ## Status legend
 
@@ -324,4 +343,5 @@ agent-to-agent API; the repo is the integration layer).
 | 10 — Naval/Air/Campaign/Balance (subset) | [x] |
 | 10b — Modding/Perf/Balance/Streaming/Multiplayer/Audio (foundation) | [x] |
 | 10c — Spatial/Networking/Mod integration + asset pipeline/wiring | [x] |
-| 10c+ — Streaming terrain rendering, netcode replication, full art/audio pass | [~] |
+| 10c+ — SpatialGrid hot path, netcode replication, streaming terrain, balance guard | [~] |
+| 10c+ — Full art/audio pass (external asset generation) | [ ] |

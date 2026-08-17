@@ -6,11 +6,12 @@ Brigade → Battalion → Company → Platoon) and let it carry them down to the
 units — operational depth, logistics and intelligence matter more than click
 speed.
 
-Built on **Godot 4.3**. Phases 0 through 10c are implemented, with the first
-10c+ performance item (SpatialGrid wired into the intelligence hot path)
-landed; the project builds, boots, and passes its full test suite (126/126,
-300 asserts). See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the per-phase
-status.
+Built on **Godot 4.3**. Phases 0 through 10c are implemented, plus the first
+10c+ batch: SpatialGrid wired into the intelligence hot path, netcode state
+replication made testable with dynamic-spawn detection, and opt-in streaming
+terrain rendering wired to ChunkManager. The project builds, boots, and
+passes its full test suite (134/134, 324 asserts). See
+[`docs/ROADMAP.md`](docs/ROADMAP.md) for the per-phase status.
 
 ---
 
