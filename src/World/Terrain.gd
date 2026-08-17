@@ -266,7 +266,7 @@ func _build_roads() -> void:
 	_road_mesh.mesh = st.commit()
 	_road_mesh.cast_shadow = 0
 	var rmat := StandardMaterial3D.new()
-	rmat.albedo_color = Color(0.5, 0.45, 0.4)
+	rmat.albedo_color = Color(0.16, 0.14, 0.12)
 	rmat.roughness = 0.9
 	_road_mesh.material_override = rmat
 	add_child(_road_mesh)
@@ -275,7 +275,7 @@ func _build_roads() -> void:
 func _elevation_color(h: float, md: MapData) -> Color:
 	if h >= md.mountain_height:
 		var t := clampf((h - md.mountain_height) / 6.0, 0.0, 1.0)
-		return Color(0.7, 0.7, 0.72).lerp(Color(1, 1, 1), t)
+		return Color(0.28, 0.31, 0.32).lerp(Color(0.62, 0.65, 0.64), t)
 	if h >= md.plateau_height:
-		return Color(0.6, 0.55, 0.4)
-	return Color(0.25, 0.45, 0.2).lerp(Color(0.4, 0.5, 0.25), clampf(h / 8.0, 0.0, 1.0))
+		return Color(0.48, 0.42, 0.28)
+	return Color(0.16, 0.28, 0.12).lerp(Color(0.38, 0.44, 0.18), clampf(h / 8.0, 0.0, 1.0))

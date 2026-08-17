@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://maintowar01"]
+[gd_scene load_steps=11 format=3 uid="uid://maintowar01"]
 
 [ext_resource type="Script" path="res://src/UI/Main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://src/World/World.tscn" id="2_world"]
@@ -9,10 +9,39 @@
 [ext_resource type="Script" path="res://src/UI/PlayerController.gd" id="7_pc"]
 [ext_resource type="PackedScene" path="res://src/UI/Minimap.tscn" id="8_mm"]
 
+[sub_resource type="Environment" id="Environment_military"]
+background_mode = 1
+background_color = Color(0.32, 0.39, 0.48, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.62, 0.68, 0.78, 1)
+ambient_light_energy = 0.7
+reflected_light_source = 2
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="Material_ground_overlay"]
+albedo_color = Color(0.32, 0.38, 0.22, 1)
+roughness = 0.95
+
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
 
 [node name="World" parent="." instance=ExtResource("2_world")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_military")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -28, 0)
+light_color = Color(1, 0.91, 0.76, 1)
+light_energy = 1.35
+shadow_enabled = true
+
+[node name="FillLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-35, 145, 0)
+light_color = Color(0.42, 0.55, 0.78, 1)
+light_energy = 0.28
+shadow_enabled = false
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.766, 0.643, 0, -0.643, 0.766, 0, 35, 0)

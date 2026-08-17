@@ -130,6 +130,8 @@ func _rebuild_visual_model() -> void:
 		return
 	for node in visual_model.get_children():
 		node.queue_free()
+	# RTS readability: keep units visibly larger than the terrain grid.
+	visual_model.scale = Vector3.ONE * 1.65
 	body_mesh.visible = unit_type.category == UnitType.Category.INFANTRY or unit_type.category == UnitType.Category.SNIPER
 	body_mesh.scale = Vector3.ONE
 	body_mesh.position = Vector3(0, 0.6, 0)
