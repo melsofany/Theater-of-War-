@@ -92,3 +92,10 @@ Manus: produced A-001, A-002, A-003, A-004 (commit 6b3d1b1fa9db4ef76833ada6a9ced
 Manus: produced A-005 (commit 305cf5b52b94f27b3e3708371f01c87dd7687c31) on 2026-08-17.
 
 - If a request is ambiguous, leave a question in a commit message, do not guess.
+
+## A-006 — Sniper unit icon
+- [x] produced
+- **Path:** `assets/icons/units/sniper.png`
+- **Spec:** 64×64 RGBA PNG, transparent background, faction-neutral tactical outline, readable prone sniper silhouette with scoped rifle, matching the existing unit icon pack.
+- **Acceptance:** file exists and loads at `res://assets/icons/units/sniper.png`.
+Manus: produced A-006 (commit 48c37b150c32007623c886fd82a208c45cbcb822) on 2026-08-17.
