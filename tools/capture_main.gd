@@ -35,9 +35,23 @@ func _capture() -> void:
     await create_timer(0.8).timeout
     viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/unit_closeup.png"))
     # Pull up and point at the center to show the full formation.
+    camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+    camera.fov = 52.0
     camera.global_position = Vector3(8.0, 48.0, 8.0)
     camera.look_at(Vector3(5.0, 0.0, 0.0), Vector3.UP)
     await process_frame
     await create_timer(1.0).timeout
     viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/main_overview.png"))
+    # Modern-city showcase: Northport is generated around (25.6, -32.0).
+    var hud := scene.get_node_or_null("HUD") as Control
+    var minimap := scene.get_node_or_null("Minimap") as Control
+    if hud:
+        hud.visible = false
+    if minimap:
+        minimap.visible = false
+    camera.global_position = Vector3(70.0, 62.0, 28.0)
+    camera.look_at(Vector3(25.6, 7.0, -32.0), Vector3.UP)
+    await process_frame
+    await create_timer(1.0).timeout
+    viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/modern_city_overview.png"))
     quit(0)

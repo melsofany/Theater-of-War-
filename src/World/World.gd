@@ -58,6 +58,15 @@ func _build_features() -> void:
 		pos.y = map_data.height_at(pos.x, pos.z)
 		node.global_position = pos
 		node.city_name = city["name"]
+		# Replace the old placeholder cube with an original procedural modern district.
+		if node.body_mesh:
+			node.body_mesh.visible = false
+		var modern_city := ModernCity.new()
+		modern_city.city_name = city["name"]
+		modern_city.city_seed = hash(city["name"])
+		features_root.add_child(modern_city)
+		modern_city.global_position = pos
+
 	for z in map_data.zones:
 		var node: StrategicZone = null
 		if zone_scene:

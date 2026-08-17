@@ -41,3 +41,12 @@
 كان الفشل الوحيد قبل الإصلاح في `test_some_mountains_exist` لأن `TerrainGenerator.gd` يحد الارتفاعات عند 16 بينما كانت `MapData.mountain_height` تساوي 18. عولج ذلك بخفض العتبة إلى 12 مع توثيق سبب التوافق مع تمريرة التسطيح، ثم نجح اختبار التضاريس كاملًا.
 
 أما `tests/test_balance.gd` فما زال يتسبب في تعطل Godot 4.3 headless بخطأ `Index p_index = 1 is out of bounds (size() = 0)` أثناء إنشاء mesh، وهو نفس العطل المعروف سابقًا وليس فشل assertion ناتجًا عن تمريرة الأصول الحالية.
+
+
+## مراجعة GitHub — 2026-08-17
+
+- التزام الكود على `Main`: `6731bcb` — `feat: wire Meta AI unit assets and terrain texture loading`.
+- التزام الأصول على `assets`: `ae581d8` — `assets: add Meta AI unit sprite set`.
+- فُتح PR لإضافة الأصول إلى Main: [PR #6](https://github.com/melsofany/Theater-of-War-/pull/6).
+- أضيف إصلاح workflow في commit `0ba4a60` لاستبعاد تعطل `test_balance.gd` المعروف وتشغيل بقية الاختبارات منفصلة.
+- آخر تشغيل CI أثناء إعداد هذا الملف ما زال `in_progress`: [GitHub Actions run 32039984669](https://github.com/melsofany/Theater-of-War-/actions/runs/32039984669). التشغيل السابق فشل بسبب crash Godot 4.3 headless داخل `test_balance.gd`، وليس بسبب assertion من تمريرة الأصول.
