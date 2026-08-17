@@ -57,6 +57,7 @@ func _make(
 
 
 func _register(key: String, t: UnitType) -> void:
+	t.key = key
 	_types[key] = t
 
 

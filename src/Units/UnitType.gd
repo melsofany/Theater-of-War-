@@ -20,6 +20,9 @@ enum Category {
 }
 
 @export var display_name: String = "Unit"
+## Registry key (matches the UnitFactory key and the icon filename, e.g.
+## "tank" -> res://assets/icons/units/tank.png). Set at registration time.
+@export var key: String = ""
 @export var category: Category = Category.INFANTRY
 @export var domain: Domain = Domain.GROUND
 @export var max_health: float = 100.0

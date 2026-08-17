@@ -15,6 +15,12 @@ var _missing_logged: Dictionary = {}
 
 
 func _ready() -> void:
+	_ensure_players()
+
+
+func _ensure_players() -> void:
+	if _music_player != null:
+		return
 	for i in range(sfx_pool_size):
 		var p := AudioStreamPlayer.new()
 		p.bus = "Master"
@@ -33,6 +39,7 @@ func play_sfx(name: String) -> void:
 				_missing_logged[name] = true
 			return
 		_sfx[name] = stream
+	_ensure_players()
 	var p := _next_player()
 	if p:
 		p.stream = _sfx[name]
@@ -40,6 +47,7 @@ func play_sfx(name: String) -> void:
 
 
 func play_music(name: String) -> void:
+	_ensure_players()
 	if _music_player.stream != null and _music_player.playing:
 		_music_player.stop()
 	var stream := load("res://assets/audio/music/%s.ogg" % name)

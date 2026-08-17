@@ -49,3 +49,15 @@ text = ""
 
 [node name="BuildingLabel" type="Label" parent="VBox"]
 text = ""
+
+[node name="SelectionIcon" type="TextureRect" parent="."]
+anchors_preset = 2
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -96.0
+offset_top = 140.0
+offset_right = -32.0
+offset_bottom = 204.0
+grow_horizontal = 0
+expand_mode = 1
+stretch_mode = 5

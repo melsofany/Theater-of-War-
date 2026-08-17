@@ -279,9 +279,31 @@ func _fire(other: Unit) -> void:
 		# Out of ammo: cannot fire this tick.
 		return
 	supply = maxf(supply - ammo_per_shot, 0.0)
+	_play_fire_sfx()
 	var raw: float = unit_type.damage * compute_readiness()
 	var dmg: float = Balance.scaled_damage(raw) if Balance else raw
 	other.take_damage(dmg)
+
+
+func _play_fire_sfx() -> void:
+	var am := get_node_or_null("/root/AudioManager")
+	if am and am.has_method("play_sfx"):
+		am.play_sfx(_fire_sfx_name())
+
+
+func _fire_sfx_name() -> String:
+	match unit_type.category:
+		UnitType.Category.INFANTRY:
+			return "infantry_fire"
+		UnitType.Category.TANK:
+			return "tank_fire"
+		UnitType.Category.ARTILLERY:
+			return "artillery_fire"
+		UnitType.Category.AIR_DEFENSE:
+			return "aa_fire"
+		UnitType.Category.AIRCRAFT, UnitType.Category.HELICOPTER:
+			return "aircraft_fire"
+	return "infantry_fire"
 
 
 func take_damage(amount: float) -> void:
@@ -301,6 +323,9 @@ func die() -> void:
 		return
 	alive = false
 	health = 0.0
+	var am := get_node_or_null("/root/AudioManager")
+	if am and am.has_method("play_sfx"):
+		am.play_sfx("explosion")
 	died.emit(self)
 	_update_health_bar()
 	# Detach from selection and hide; the world/manager can free later.

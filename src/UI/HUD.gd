@@ -16,6 +16,7 @@ class_name HUD
 @onready var intel_label: Label = $VBox/IntelLabel
 @onready var campaign_label: Label = $VBox/CampaignLabel
 @onready var building_label: Label = $VBox/BuildingLabel
+@onready var selection_icon: TextureRect = $SelectionIcon
 
 
 func _ready() -> void:
@@ -63,7 +64,23 @@ func _process(_delta: float) -> void:
 	_update_intel()
 	_update_campaign()
 	_update_command()
+	_update_selection_icon()
 	queue_redraw()
+
+
+func _update_selection_icon() -> void:
+	if selection_icon == null:
+		return
+	var units: Array = SelectionManager.selected if SelectionManager else []
+	if units.is_empty():
+		selection_icon.texture = null
+		return
+	var u: Unit = units[0]
+	if u.unit_type == null or u.unit_type.key.is_empty():
+		selection_icon.texture = null
+		return
+	var tex := load("res://assets/icons/units/%s.png" % u.unit_type.key)
+	selection_icon.texture = tex
 
 
 func _update_logistics() -> void:

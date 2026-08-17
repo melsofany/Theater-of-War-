@@ -8,7 +8,16 @@ extends Control
 class_name MainMenu
 
 
+func _ready() -> void:
+	var am := get_node_or_null("/root/AudioManager")
+	if am and am.has_method("play_music"):
+		am.play_music("menu_theme")
+
+
 func _on_new_game_pressed() -> void:
+	var am := get_node_or_null("/root/AudioManager")
+	if am and am.has_method("stop_music"):
+		am.stop_music()
 	get_tree().change_scene_to_file("res://src/UI/Main.tscn")
 
 

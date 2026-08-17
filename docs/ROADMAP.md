@@ -258,6 +258,27 @@ Foundation layers for the remaining Phase 10 areas; each is bounded and tested.
 - **Audio** (`AudioManager` autoload): play SFX/music by name from
   `res://assets/audio/`; no-op when assets are missing so the game runs without
   them. Asset pipeline deferred to the art pass.
+
+## Phase 10c — Asset pipeline + asset wiring (complete)
+
+External generation integrated via a shared-Git asset contract (no live
+agent-to-agent API; the repo is the integration layer).
+
+- **Asset pipeline** (`docs/ASSET_PIPELINE.md`, `ASSET_REQUESTS.md`): roles,
+  access setup, exact placement/naming/format contract, the produce→wire loop,
+  and license terms. An external generator (Manus) reads requests, produces
+  files, and commits them to the `assets` branch; OpenHands pulls and wires.
+- **Generated assets** (committed on `assets` branch, merged here): menu music,
+  6 combat SFX, 26 unit-type icons, menu background.
+- **Wiring**: `AudioManager` lazily initializes its player pool and is robust to
+  early calls. `MainMenu` plays menu music on entry and stops it on game start.
+  `Unit` plays the per-category fire SFX on attack and the explosion SFX on
+  death. `UnitType.key` is set at registration and drives the HUD selection
+  icon (`HUD.SelectionIcon` loads `res://assets/icons/units/<key>.png`).
+- **Validation**: `validate_project.gd` remains clean; the audio autoload is
+  resolved via tree path so scene-attached scripts compile in headless checks.
+- **Tests**: 124 passing / 295 asserts, including new asset existence + load and
+  key-wiring tests (`tests/test_phase10c_assets.gd`).
 - Tests: +18 (modloader, register_from_dict incl. naval/air defaults, spatial
   grid query/remove/update, balance defaults/scaling/presets, chunk math,
   networking states) -> 117 passing / 252 asserts.
