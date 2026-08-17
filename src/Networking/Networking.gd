@@ -1,17 +1,21 @@
+## Networking (autoload) — Phase 10c
+##
+## ENet session setup plus lightweight authoritative unit-state replication.
+## The host sends snapshots of the deterministic unit fields; clients apply them
+## to matching nodes. Full lockstep simulation and dynamic spawn replication are
+## intentionally left for a later multiplayer pass.
+
 extends Node
-## Networking (autoload) — Phase 10b (multiplayer foundation)
-##
-## Host/join foundation using Godot's high-level multiplayer (ENet). This phase
-## provides connection setup and a session state machine; full state replication
-## (unit sync, deterministic simulation, lockstep) is a later pass.
-##
-## States: OFFLINE -> HOSTING (as server) or CONNECTING -> ONLINE -> OFFLINE.
 
 enum State { OFFLINE, HOSTING, CONNECTING, ONLINE }
 
 var state: int = State.OFFLINE
 var peer: ENetMultiplayerPeer = null
+var replicated_world: World = null
+@export var sync_interval: float = 0.10
+var _sync_elapsed: float = 0.0
 signal state_changed(new_state: int)
+signal snapshot_applied(unit_count: int)
 
 
 func host(port: int = 12000, max_clients: int = 4) -> bool:
@@ -47,6 +51,16 @@ func disconnect_peer() -> void:
 	_set_state(State.OFFLINE)
 
 
+func attach_world(world: World) -> void:
+	replicated_world = world
+	_sync_elapsed = 0.0
+
+
+func detach_world(world: World = null) -> void:
+	if world == null or replicated_world == world:
+		replicated_world = null
+
+
 func is_online() -> bool:
 	return state == State.ONLINE or state == State.HOSTING or state == State.CONNECTING
 
@@ -61,6 +75,7 @@ func _stop() -> void:
 		peer = null
 	if multiplayer and multiplayer.multiplayer_peer != null:
 		multiplayer.multiplayer_peer = null
+	_sync_elapsed = 0.0
 
 
 func _set_state(s: int) -> void:
@@ -68,9 +83,65 @@ func _set_state(s: int) -> void:
 	state_changed.emit(s)
 
 
-func _process(_delta: float) -> void:
-	# Promote a connecting client to ONLINE once the connection is established.
+func _process(delta: float) -> void:
 	if state == State.CONNECTING and peer != null:
 		if peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 			_set_state(State.ONLINE)
+	if not is_server() or replicated_world == null:
+		return
+	_sync_elapsed += delta
+	if _sync_elapsed < maxf(sync_interval, 0.02):
+		return
+	_sync_elapsed = 0.0
+	_send_snapshot.rpc(_build_snapshot())
 
+
+func _build_snapshot() -> Array:
+	var snapshot: Array = []
+	for unit in replicated_world.get_units():
+		if unit == null:
+			continue
+		snapshot.append({
+			"name": str(unit.name),
+			"position": unit.global_position,
+			"rotation": unit.global_rotation,
+			"health": unit.health,
+			"supply": unit.supply,
+			"fuel": unit.fuel,
+			"alive": unit.alive,
+			"target_position": unit.target_position,
+			"moving": unit.moving,
+		})
+	return snapshot
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _send_snapshot(snapshot: Array) -> void:
+	# The RPC is invoked by the host and delivered to clients. On the host,
+	# call_remote prevents this method from applying the snapshot locally.
+	if is_server() or replicated_world == null:
+		return
+	var applied: int = 0
+	for state_data in snapshot:
+		if not state_data is Dictionary:
+			continue
+		var unit := _find_unit(str(state_data.get("name", "")))
+		if unit == null:
+			continue
+		unit.global_position = state_data.get("position", unit.global_position)
+		unit.global_rotation = state_data.get("rotation", unit.global_rotation)
+		unit.health = float(state_data.get("health", unit.health))
+		unit.supply = float(state_data.get("supply", unit.supply))
+		unit.fuel = float(state_data.get("fuel", unit.fuel))
+		unit.alive = bool(state_data.get("alive", unit.alive))
+		unit.target_position = state_data.get("target_position", unit.target_position)
+		unit.moving = bool(state_data.get("moving", unit.moving))
+		unit.call_deferred("_update_health_bar")
+		applied += 1
+	snapshot_applied.emit(applied)
+
+
+func _find_unit(unit_name: String) -> Unit:
+	if unit_name.is_empty() or replicated_world == null or replicated_world.units_root == null:
+		return null
+	return replicated_world.units_root.get_node_or_null(NodePath(unit_name)) as Unit

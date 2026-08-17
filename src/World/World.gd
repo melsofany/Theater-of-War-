@@ -16,6 +16,8 @@ class_name World
 @onready var units_root: Node3D = $Units
 @onready var features_root: Node3D = $Features
 var terrain: Terrain
+## Spatial index used by combat, AI and intelligence radius queries.
+var spatial_grid: SpatialGrid = SpatialGrid.new(16.0)
 
 
 func _ready() -> void:
@@ -23,6 +25,11 @@ func _ready() -> void:
 		map_data = TerrainGenerator.new().generate()
 	_build_terrain()
 	_build_features()
+	if units_root:
+		units_root.child_entered_tree.connect(_on_unit_entered_tree)
+		units_root.child_exiting_tree.connect(_on_unit_exiting_tree)
+		for child in units_root.get_children():
+			_register_spatial_entity(child)
 	GameManager.start_game(self)
 
 
@@ -60,6 +67,28 @@ func _build_features() -> void:
 		features_root.add_child(node)
 		node.zone_name = z["name"]
 		node.set_rect(z["rect"])
+
+
+func _on_unit_entered_tree(node: Node) -> void:
+	_register_spatial_entity(node)
+
+
+func _on_unit_exiting_tree(node: Node) -> void:
+	if node is Unit:
+		spatial_grid.remove(node)
+
+
+func _register_spatial_entity(node: Node) -> void:
+	if node is Unit:
+		spatial_grid.insert(node)
+
+
+func update_unit_spatial(unit: Unit, old_pos: Vector3) -> void:
+	spatial_grid.update(unit, old_pos)
+
+
+func query_units_radius(pos: Vector3, radius: float) -> Array:
+	return spatial_grid.query_radius(pos, radius)
 
 
 func get_units() -> Array:
@@ -116,6 +145,7 @@ func spawn_unit(scene: PackedScene, at: Vector3) -> Unit:
 	var u := scene.instantiate() as Unit
 	units_root.add_child(u)
 	u.global_position = at
+	spatial_grid.insert(u)
 	return u
 
 

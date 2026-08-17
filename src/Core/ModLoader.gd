@@ -51,10 +51,45 @@ func _load_dir(path: String) -> void:
 	dir.list_dir_begin()
 	var name := dir.get_next()
 	while name != "":
-		if not dir.current_is_dir() and name.ends_with(".json"):
-			_load_file(path + name)
+		if not dir.current_is_dir():
+			if name.ends_with(".json"):
+				_load_file(path + name)
+			elif name.ends_with(".zip"):
+				_load_zip(path + name)
 		name = dir.get_next()
 	dir.list_dir_end()
+
+
+## Load a packaged mod. The archive must contain manifest.json (or mod.json)
+## with either a `units` array or a single unit dictionary. Assets remain inside
+## the archive for later consumers; this pass only registers data definitions.
+func _load_zip(path: String) -> void:
+	var zip := ZIPReader.new()
+	if zip.open(path) != OK:
+		push_warning("ModLoader: failed to open package %s" % path)
+		return
+	var manifest_path := ""
+	for candidate in ["manifest.json", "mod.json"]:
+		if candidate in zip.get_files():
+			manifest_path = candidate
+			break
+	if manifest_path.is_empty():
+		zip.close()
+		push_warning("ModLoader: package has no manifest: %s" % path)
+		return
+	var json := JSON.new()
+	var err := json.parse(zip.read_file(manifest_path).get_string_from_utf8())
+	zip.close()
+	if err != OK:
+		push_warning("ModLoader: failed to parse manifest %s: %s" % [path, json.get_error_message()])
+		return
+	var data = json.data
+	if data is Dictionary and data.has("units") and data.units is Array:
+		for entry in data.units:
+			if entry is Dictionary:
+				_register_one(entry)
+	elif data is Dictionary:
+		_register_one(data)
 
 
 func _load_file(path: String) -> void:
