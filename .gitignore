@@ -32,3 +32,6 @@ exports/
 
 # Logs
 *.log
+
+# OpenHands working backup (throwaway, not part of project)
+.openhands-backup/

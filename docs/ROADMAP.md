@@ -277,11 +277,14 @@ agent-to-agent API; the repo is the integration layer).
   icon (`HUD.SelectionIcon` loads `res://assets/icons/units/<key>.png`).
 - **Validation**: `validate_project.gd` remains clean; the audio autoload is
   resolved via tree path so scene-attached scripts compile in headless checks.
-- **Tests**: 124 passing / 295 asserts, including new asset existence + load and
-  key-wiring tests (`tests/test_phase10c_assets.gd`).
-- Tests: +18 (modloader, register_from_dict incl. naval/air defaults, spatial
-  grid query/remove/update, balance defaults/scaling/presets, chunk math,
-  networking states) -> 117 passing / 252 asserts.
+- **Spatial/Networking/Mod integration** (merged from the parallel 10c
+  foundation track): `ModLoader` resolves mod unit keys; `Networking` gains the
+  session state machine + host/join helpers; `World` exposes spatial query
+  helpers; `Unit` wires into the networking/integration paths.
+- **Tests**: 124 passing / 295 asserts (verified on the consolidated branch),
+  including asset existence + load, key-wiring (`tests/test_phase10c_assets.gd`),
+  and the Phase 10b suite (modloader, register_from_dict incl. naval/air
+  defaults, spatial grid, balance, chunk math, networking states).
 
 ### Future work
 
@@ -310,4 +313,5 @@ agent-to-agent API; the repo is the integration layer).
 | 9 — Espionage | [x] |
 | 10 — Naval/Air/Campaign/Balance (subset) | [x] |
 | 10b — Modding/Perf/Balance/Streaming/Multiplayer/Audio (foundation) | [x] |
-| 10c+ — Streaming rendering, netcode replication, art/audio assets | [ ] |
+| 10c — Spatial/Networking/Mod integration + asset pipeline/wiring | [x] |
+| 10c+ — Streaming terrain rendering, netcode replication, full art/audio pass | [ ] |

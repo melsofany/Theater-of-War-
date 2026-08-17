@@ -1,8 +1,10 @@
 # Theater of War — Agent Memory
 
-RTS game built in **Godot 4.3 (GDScript)**. Each phase lives on its own branch
-(`phase-0-foundation` … `phase-10b-modding-perf-balance`). No pull requests are
-opened; branches are pushed directly.
+RTS game built in **Godot 4.3 (GDScript)**. The per-phase history lives on
+its own branch (`phase-0-foundation` … `phase-10c-assets-wiring`); the
+consolidated line of development is the `integration/consolidated` branch,
+which merges both parallel Phase 10c tracks (foundation + assets-wiring) into
+one tree. No pull requests are opened; branches are pushed directly.
 
 ## Architecture
 
@@ -14,7 +16,8 @@ opened; branches are pushed directly.
   Campaign.
 - Tests: GUT, `tests/*.gd`, run via
   `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit`.
-  Latest: 117 passing / 252 asserts.
+  Latest: 124 passing / 295 asserts (1 pending/risky, 0 failing) — verified on
+  the consolidated branch after the Phase 10c merge.
 - Scene validation: `godot --headless --script tools/validate_project.gd`.
 - Godot binary expected at `$HOME/godot/godot` (add to PATH).
 
@@ -38,5 +41,7 @@ using `\u2014` / `\u2192` literals to avoid str_replace mismatches.
 
 ## Phase status
 
-Phases 0–10b complete and pushed. Next (10c+): streaming terrain rendering wired
-to ChunkManager, multiplayer state replication, art/audio assets.
+Phases 0–10c complete (the two parallel 10c tracks are merged on
+`integration/consolidated`). Next (10c+): streaming terrain rendering wired to
+ChunkManager, multiplayer state replication, full art/audio pass, balance
+playtesting.
