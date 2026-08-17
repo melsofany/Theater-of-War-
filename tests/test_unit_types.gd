@@ -7,6 +7,13 @@ func test_factory_has_all_categories():
 		assert_true(keys.has(k), "missing key: %s" % k)
 
 
+func test_sniper_type_is_registered():
+	var sniper := UnitFactory.get_type("sniper")
+	assert_eq(sniper.category, UnitType.Category.SNIPER)
+	assert_gt(sniper.range, UnitFactory.get_type("infantry").range)
+	assert_gt(sniper.damage, UnitFactory.get_type("infantry").damage)
+
+
 func test_tank_is_stronger_than_infantry():
 	var inf := UnitFactory.get_type("infantry")
 	var tank := UnitFactory.get_type("tank")

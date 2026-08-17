@@ -54,12 +54,14 @@ var sight_range: float = 25.0
 @onready var selection_ring: MeshInstance3D = $SelectionRing
 @onready var agent: NavigationAgent3D = $NavigationAgent
 @onready var health_bar: MeshInstance3D = $HealthBar
+@onready var visual_model: Node3D = $VisualModel
 
 
 func _ready() -> void:
 	if unit_type == null and UnitFactory:
 		unit_type = UnitFactory.get_type("infantry")
-	_apply_type()
+	_update_visuals()
+	_rebuild_visual_model()
 	target_position = global_position
 	_update_visuals()
 	if agent:
@@ -87,6 +89,7 @@ func _apply_type() -> void:
 	if agent:
 		agent.radius = radius
 	_update_visuals()
+	_rebuild_visual_model()
 
 
 ## Effectiveness from supply, fuel and health. Air units are grounded (0 move)
@@ -113,7 +116,94 @@ func _update_visuals() -> void:
 		var mat := body_mesh.get_surface_override_material(0) as StandardMaterial3D
 		if mat:
 			mat.albedo_color = faction.color
+	if visual_model and faction:
+		for node in visual_model.get_children():
+			if node is MeshInstance3D:
+				var visual_mat := (node as MeshInstance3D).get_surface_override_material(0) as StandardMaterial3D
+				if visual_mat:
+					visual_mat.albedo_color = faction.color.lerp(Color(0.06, 0.08, 0.1), 0.28)
 	_update_health_bar()
+
+
+func _rebuild_visual_model() -> void:
+	if visual_model == null or unit_type == null:
+		return
+	for node in visual_model.get_children():
+		node.queue_free()
+	body_mesh.visible = unit_type.category == UnitType.Category.INFANTRY or unit_type.category == UnitType.Category.SNIPER
+	body_mesh.scale = Vector3.ONE
+	body_mesh.position = Vector3(0, 0.6, 0)
+	match unit_type.category:
+		UnitType.Category.INFANTRY:
+			_add_visual(_sphere(0.28), Vector3(0, 1.14, 0), Vector3.ZERO, "Head")
+			_add_visual(_box(Vector3(0.12, 0.12, 0.65)), Vector3(0, 0.72, 0.28), Vector3.ONE, "Rifle")
+		UnitType.Category.SNIPER:
+			body_mesh.scale = Vector3(0.9, 0.55, 1.2)
+			body_mesh.position = Vector3(0, 0.34, 0)
+			_add_visual(_box(Vector3(0.16, 0.13, 1.25)), Vector3(0, 0.39, 0.58), Vector3.ONE, "ScopedRifle")
+			_add_visual(_cylinder(0.055, 0.22), Vector3(0, 0.48, 0.34), Vector3(PI / 2.0, 0, 0), "Scope")
+		UnitType.Category.VEHICLE:
+			_add_visual(_box(Vector3(1.25, 0.45, 1.7)), Vector3(0, 0.45, 0), Vector3.ONE, "VehicleHull")
+			_add_wheels()
+		UnitType.Category.TANK:
+			_add_visual(_box(Vector3(1.6, 0.48, 2.0)), Vector3(0, 0.44, 0), Vector3.ONE, "TankHull")
+			_add_visual(_cylinder(0.48, 0.25), Vector3(0, 0.78, 0), Vector3.ZERO, "Turret")
+			_add_visual(_box(Vector3(0.18, 0.18, 1.25)), Vector3(0, 0.82, 0.7), Vector3.ONE, "TankBarrel")
+			_add_wheels()
+		UnitType.Category.ARTILLERY:
+			_add_visual(_box(Vector3(1.25, 0.38, 1.65)), Vector3(0, 0.4, 0), Vector3.ONE, "ArtilleryHull")
+			_add_visual(_box(Vector3(0.16, 0.16, 1.25)), Vector3(0, 0.78, 0.55), Vector3(PI / 10.0, 0, 0), "Howitzer")
+		UnitType.Category.AIR_DEFENSE:
+			_add_visual(_box(Vector3(1.2, 0.4, 1.4)), Vector3(0, 0.4, 0), Vector3.ONE, "AAHull")
+			_add_visual(_cylinder(0.09, 1.0), Vector3(-0.22, 0.76, 0), Vector3(0, 0, PI / 2.0), "AAGunLeft")
+			_add_visual(_cylinder(0.09, 1.0), Vector3(0.22, 0.76, 0), Vector3(0, 0, PI / 2.0), "AAGunRight")
+		UnitType.Category.AIRCRAFT:
+			_add_visual(_box(Vector3(0.28, 0.22, 1.9)), Vector3(0, 0.55, 0), Vector3.ONE, "AircraftBody")
+			_add_visual(_box(Vector3(1.5, 0.08, 0.42)), Vector3(0, 0.55, 0.1), Vector3.ONE, "AircraftWings")
+		UnitType.Category.HELICOPTER:
+			_add_visual(_box(Vector3(0.55, 0.45, 1.15)), Vector3(0, 0.7, 0), Vector3.ONE, "HelicopterBody")
+			_add_visual(_box(Vector3(2.0, 0.04, 0.08)), Vector3(0, 1.15, 0), Vector3.ONE, "Rotor")
+	_update_visuals()
+
+
+func _box(size: Vector3) -> BoxMesh:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	return mesh
+
+
+func _sphere(radius_value: float) -> SphereMesh:
+	var mesh := SphereMesh.new()
+	mesh.radius = radius_value
+	mesh.height = radius_value * 2.0
+	return mesh
+
+
+func _cylinder(radius_value: float, height_value: float) -> CylinderMesh:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius_value
+	mesh.bottom_radius = radius_value
+	mesh.height = height_value
+	return mesh
+
+
+func _add_visual(mesh: Mesh, position: Vector3, rotation: Vector3, node_name: String) -> void:
+	var node := MeshInstance3D.new()
+	node.name = node_name
+	node.mesh = mesh
+	node.position = position
+	node.rotation = rotation
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = faction.color if faction else Color(0.2, 0.4, 0.9)
+	mat.roughness = 0.72
+	node.material_override = mat
+	visual_model.add_child(node)
+
+
+func _add_wheels() -> void:
+	for side in [-1.0, 1.0]:
+		for z in [-0.58, 0.58]:
+			_add_visual(_cylinder(0.18, 0.14), Vector3(side * 0.7, 0.28, z), Vector3(0, 0, PI / 2.0), "Wheel")
 
 
 func _update_health_bar() -> void:

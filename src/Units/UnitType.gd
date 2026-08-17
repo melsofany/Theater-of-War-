@@ -11,6 +11,7 @@ class_name UnitType
 enum Domain { GROUND, AIR, NAVAL }
 enum Category {
 	INFANTRY,
+	SNIPER,
 	VEHICLE,
 	TANK,
 	ARTILLERY,
