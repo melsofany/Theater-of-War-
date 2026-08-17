@@ -188,9 +188,15 @@ func _build_ground() -> void:
 	_mesh_instance.mesh = st.commit()
 	_mesh_instance.cast_shadow = 1  # GeometryInstance3D.ShadowCastingSetting.ON
 	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.roughness = 0.95
-	mat.metalness = 0.0
+	mat.vertex_color_use_as_albedo = false
+	mat.albedo_color = Color.WHITE
+	mat.albedo_texture = load("res://assets/textures/terrain/grass.png")
+	mat.normal_enabled = true
+	mat.normal_texture = load("res://assets/textures/terrain/grass_normal.png")
+	mat.roughness_texture = load("res://assets/textures/terrain/grass_roughness.png")
+	mat.roughness = 0.88
+	mat.metallic = 0.0
+	mat.uv1_scale = Vector3(7.0, 7.0, 7.0)
 	_mesh_instance.material_override = mat
 	add_child(_mesh_instance)
 
@@ -226,10 +232,15 @@ func _build_water() -> void:
 	_water_mesh.mesh = st.commit()
 	_water_mesh.cast_shadow = 0
 	var wmat := StandardMaterial3D.new()
-	wmat.albedo_color = Color(0.15, 0.35, 0.7, 0.75)
+	wmat.albedo_texture = load("res://assets/textures/terrain/water.png")
+	wmat.normal_enabled = true
+	wmat.normal_texture = load("res://assets/textures/terrain/water_normal.png")
+	wmat.roughness_texture = load("res://assets/textures/terrain/water_roughness.png")
 	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	wmat.roughness = 0.2
-	wmat.metalness = 0.1
+	wmat.albedo_color = Color(0.28, 0.55, 0.82, 0.82)
+	wmat.roughness = 0.18
+	wmat.metallic = 0.12
+	wmat.uv1_scale = Vector3(4.0, 4.0, 4.0)
 	_water_mesh.material_override = wmat
 	add_child(_water_mesh)
 
@@ -266,8 +277,13 @@ func _build_roads() -> void:
 	_road_mesh.mesh = st.commit()
 	_road_mesh.cast_shadow = 0
 	var rmat := StandardMaterial3D.new()
-	rmat.albedo_color = Color(0.16, 0.14, 0.12)
-	rmat.roughness = 0.9
+	rmat.albedo_texture = load("res://assets/textures/terrain/road.png")
+	rmat.normal_enabled = true
+	rmat.normal_texture = load("res://assets/textures/terrain/road_normal.png")
+	rmat.roughness_texture = load("res://assets/textures/terrain/road_roughness.png")
+	rmat.albedo_color = Color(0.72, 0.70, 0.66)
+	rmat.roughness = 0.92
+	rmat.uv1_scale = Vector3(5.0, 5.0, 5.0)
 	_road_mesh.material_override = rmat
 	add_child(_road_mesh)
 

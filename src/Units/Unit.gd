@@ -137,20 +137,33 @@ func _rebuild_visual_model() -> void:
 	body_mesh.position = Vector3(0, 0.6, 0)
 	match unit_type.category:
 		UnitType.Category.INFANTRY:
-			_add_visual(_sphere(0.28), Vector3(0, 1.14, 0), Vector3.ZERO, "Head")
-			_add_visual(_box(Vector3(0.12, 0.12, 0.65)), Vector3(0, 0.72, 0.28), Vector3.ONE, "Rifle")
+			_add_visual(_box(Vector3(0.48, 0.62, 0.34)), Vector3(0, 0.70, 0), Vector3.ZERO, "ArmoredVest")
+			_add_visual(_box(Vector3(0.16, 0.54, 0.18)), Vector3(-0.13, 0.28, 0), Vector3.ZERO, "LeftLeg")
+			_add_visual(_box(Vector3(0.16, 0.54, 0.18)), Vector3(0.13, 0.28, 0), Vector3.ZERO, "RightLeg")
+			_add_visual(_sphere(0.25), Vector3(0, 1.18, 0), Vector3.ZERO, "Head")
+			_add_visual(_cylinder(0.28, 0.10), Vector3(0, 1.38, 0), Vector3.ZERO, "Helmet")
+			_add_visual(_box(Vector3(0.28, 0.48, 0.18)), Vector3(0, 0.72, -0.22), Vector3.ZERO, "Pack")
+			_add_visual(_box(Vector3(0.10, 0.10, 0.78)), Vector3(0.12, 0.86, 0.30), Vector3.ZERO, "Rifle")
 		UnitType.Category.SNIPER:
 			body_mesh.scale = Vector3(0.9, 0.55, 1.2)
 			body_mesh.position = Vector3(0, 0.34, 0)
-			_add_visual(_box(Vector3(0.16, 0.13, 1.25)), Vector3(0, 0.39, 0.58), Vector3.ONE, "ScopedRifle")
-			_add_visual(_cylinder(0.055, 0.22), Vector3(0, 0.48, 0.34), Vector3(PI / 2.0, 0, 0), "Scope")
+			_add_visual(_box(Vector3(0.58, 0.22, 1.05)), Vector3(0, 0.30, 0), Vector3.ZERO, "GhillieBody")
+			_add_visual(_sphere(0.22), Vector3(0, 0.58, -0.30), Vector3.ZERO, "SniperHead")
+			_add_visual(_box(Vector3(0.15, 0.13, 1.35)), Vector3(0, 0.47, 0.48), Vector3.ZERO, "ScopedRifle")
+			_add_visual(_cylinder(0.06, 0.24), Vector3(0, 0.55, 0.25), Vector3(PI / 2.0, 0, 0), "Scope")
+			_add_visual(_box(Vector3(0.05, 0.20, 0.30)), Vector3(-0.10, 0.20, 0.48), Vector3(0, 0, 0.22), "BipodLeft")
+			_add_visual(_box(Vector3(0.05, 0.20, 0.30)), Vector3(0.10, 0.20, 0.48), Vector3(0, 0, -0.22), "BipodRight")
 		UnitType.Category.VEHICLE:
-			_add_visual(_box(Vector3(1.25, 0.45, 1.7)), Vector3(0, 0.45, 0), Vector3.ONE, "VehicleHull")
+			_add_visual(_box(Vector3(1.45, 0.46, 1.9)), Vector3(0, 0.45, 0), Vector3.ZERO, "VehicleHull")
+			_add_visual(_box(Vector3(0.90, 0.38, 0.62)), Vector3(0, 0.82, -0.18), Vector3.ZERO, "Cabin")
+			_add_visual(_box(Vector3(0.72, 0.20, 0.05)), Vector3(0, 0.84, 0.14), Vector3.ZERO, "Windshield")
 			_add_wheels()
 		UnitType.Category.TANK:
-			_add_visual(_box(Vector3(1.6, 0.48, 2.0)), Vector3(0, 0.44, 0), Vector3.ONE, "TankHull")
-			_add_visual(_cylinder(0.48, 0.25), Vector3(0, 0.78, 0), Vector3.ZERO, "Turret")
-			_add_visual(_box(Vector3(0.18, 0.18, 1.25)), Vector3(0, 0.82, 0.7), Vector3.ONE, "TankBarrel")
+			_add_visual(_box(Vector3(1.8, 0.52, 2.2)), Vector3(0, 0.44, 0), Vector3.ZERO, "TankHull")
+			_add_visual(_box(Vector3(2.0, 0.22, 2.0)), Vector3(0, 0.68, 0), Vector3.ZERO, "TrackDeck")
+			_add_visual(_cylinder(0.52, 0.28), Vector3(0, 0.91, -0.10), Vector3.ZERO, "Turret")
+			_add_visual(_box(Vector3(0.18, 0.18, 1.45)), Vector3(0, 0.94, 0.72), Vector3.ZERO, "TankBarrel")
+			_add_visual(_cylinder(0.035, 0.80), Vector3(0.33, 1.18, -0.34), Vector3.ZERO, "Antenna")
 			_add_wheels()
 		UnitType.Category.ARTILLERY:
 			_add_visual(_box(Vector3(1.25, 0.38, 1.65)), Vector3(0, 0.4, 0), Vector3.ONE, "ArtilleryHull")
@@ -196,8 +209,15 @@ func _add_visual(mesh: Mesh, position: Vector3, rotation: Vector3, node_name: St
 	node.position = position
 	node.rotation = rotation
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = faction.color if faction else Color(0.2, 0.4, 0.9)
+	var base_color := faction.color if faction else Color(0.2, 0.4, 0.9)
+	var dark_part := node_name.contains("Rifle") or node_name.contains("Scope") or node_name.contains("Bipod") or node_name.contains("Wheel") or node_name.contains("Track") or node_name.contains("Windshield") or node_name.contains("Barrel") or node_name.contains("Antenna")
+	if dark_part:
+		base_color = Color(0.025, 0.035, 0.045)
+	elif node_name.contains("Helmet") or node_name.contains("Pack") or node_name.contains("Ghillie"):
+		base_color = base_color.lerp(Color(0.08, 0.12, 0.07), 0.48)
+	mat.albedo_color = base_color
 	mat.roughness = 0.72
+	mat.metallic = 0.08 if dark_part else 0.0
 	node.material_override = mat
 	visual_model.add_child(node)
 
