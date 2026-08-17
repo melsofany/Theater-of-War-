@@ -8,6 +8,7 @@ extends RefCounted
 class_name TerrainGenerator
 
 var _noise: FastNoiseLite
+const UNIFIED_MAP_ADAPTER = preload("res://src/World/UnifiedMapAdapter.gd")
 
 
 func _init(seed: int = 1337) -> void:
@@ -65,12 +66,15 @@ func generate(map_size: int = 96, cell: float = 2.0) -> MapData:
 	md.add_road(road)
 	md.add_bridge(Vector2(half, 0), 4.0)
 
-	# Two cities.
+	# Baseline features remain available if the attached map data is absent.
 	md.add_city("Northport", Vector3(half * 0.4, 0, -half * 0.5))
 	md.add_city("Southfield", Vector3(-half * 0.5, 0, half * 0.4))
-
-	# Strategic zones.
 	md.add_zone("Crossing", Rect2(half - 10, -8, 20, 16))
 	md.add_zone("Ridge", Rect2(md.origin.x, -half, float(map_size) * cell, half))
+
+	# The attached Unified Map JSON replaces only feature data; the local
+	# heightfield and water/bridge generation remain unchanged.
+	if FileAccess.file_exists("res://data/maps/unified_world_map_16384.json"):
+		UNIFIED_MAP_ADAPTER.apply_to_map(md)
 
 	return md
