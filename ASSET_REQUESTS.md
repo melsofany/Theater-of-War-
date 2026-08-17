@@ -9,7 +9,7 @@ Each request is self-contained so Manus needs nothing else.
 
 ## A-001 — Menu music (first priority)
 
-- [ ] produced
+- [x] produced
 - **Path:** `assets/audio/music/menu_theme.ogg`
 - **Spec:** 30–90s, stereo, 44.1kHz, looping-friendly, military/strategic mood,
   orchestral-light (strings + brass + soft percussion), no melody dominance so
@@ -21,7 +21,7 @@ Each request is self-contained so Manus needs nothing else.
 
 ## A-002 — Combat SFX pack
 
-- [ ] produced
+- [x] produced
 - **Paths (one file each):**
   - `assets/audio/sfx/infantry_fire.ogg`
   - `assets/audio/sfx/tank_fire.ogg`
@@ -36,7 +36,7 @@ Each request is self-contained so Manus needs nothing else.
 
 ## A-003 — Unit-type icons
 
-- [ ] produced
+- [x] produced
 - **Paths (one file per unit key):**
   infantry, vehicle, tank, artillery, air_defense, aircraft, helicopter,
   destroyer, frigate, heavy_tank → `assets/icons/units/<key>.png`
@@ -47,7 +47,7 @@ Each request is self-contained so Manus needs nothing else.
 
 ## A-004 — Main menu background
 
-- [ ] produced
+- [x] produced
 - **Path:** `assets/ui/menu_bg.png`
 - **Spec:** 1920×1080, wartime landscape / strategic map mood, no text, dark
   enough that white UI text stays readable (overlay tested in `Main.tscn`).
@@ -62,4 +62,6 @@ Each request is self-contained so Manus needs nothing else.
 - Do not modify anything under `src/` or `tests/` — OpenHands wires assets in.
 - After committing, leave a one-line note at the bottom of this file:
   `Manus: produced A-001, A-002 (commit <sha>) on <date>`.
+Manus: produced A-001, A-002, A-003, A-004 (commit b74dcc77f440535e9ac2dd9e87666d6580c7144e) on 2026-08-17.
+
 - If a request is ambiguous, leave a question in a commit message, do not guess.
