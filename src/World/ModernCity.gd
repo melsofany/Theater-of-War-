@@ -10,9 +10,6 @@ class_name ModernCity
 @export var city_name: String = "Modern District"
 @export var city_seed: int = 2026
 @export var district_size: Vector2 = Vector2(104.0, 84.0)
-@export var use_meta_city_reference: bool = true
-
-const META_CITY_IMAGE_PATH := "res://assets/maps/meta_package/downtown_city_aerial.webp"
 var rng := RandomNumberGenerator.new()
 var mats: Dictionary = {}
 
@@ -48,9 +45,6 @@ func _mat(color: Color, metallic: float, roughness: float) -> StandardMaterial3D
 
 
 func _build_district() -> void:
-	if use_meta_city_reference:
-		_build_meta_city_reference()
-		return
 	# A dark urban pad makes the city readable against the surrounding terrain.
 	_box("UrbanPad", Vector3(district_size.x, 0.12, district_size.y), Vector3(0, 0.02, 0), mats["asphalt"])
 	_build_roads()
@@ -59,30 +53,6 @@ func _build_district() -> void:
 	_build_residential_blocks()
 	_build_services()
 	_build_landscape()
-
-
-func _build_meta_city_reference() -> void:
-	# Use the exact aerial city image supplied in the Meta AI package as the
-	# playable district surface. No replacement image or generated map is made.
-	var image := Image.load_from_file(META_CITY_IMAGE_PATH)
-	if image == null or image.is_empty():
-		push_warning("Meta city image could not be loaded: " + META_CITY_IMAGE_PATH)
-		return
-	var texture := ImageTexture.create_from_image(image)
-	var material := StandardMaterial3D.new()
-	material.albedo_texture = texture
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	var surface := MeshInstance3D.new()
-	surface.name = "MetaAICityReference"
-	var plane := PlaneMesh.new()
-	plane.size = district_size
-	plane.material = material
-	surface.mesh = plane
-	surface.position = Vector3(0.0, 0.08, 0.0)
-	surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(surface)
 
 
 func _build_roads() -> void:

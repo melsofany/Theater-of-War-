@@ -2,7 +2,7 @@ extends Resource
 class_name MetaModernCitySpec
 
 # Modern Glass Cities - Interior scenes for world cities
-# Part of GrandStrategicMap - streams when player approaches
+# Optional city specification supplied with the Meta AI package.
 
 enum ModernBuilding {
 	GLASS_TOWER,       # برج زجاجي 20-40 دور - Curtain Wall عاكس + مهبط هليكوبتر H
