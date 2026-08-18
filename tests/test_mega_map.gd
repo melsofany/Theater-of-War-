@@ -127,14 +127,17 @@ func test_district_has_glass_towers_and_spawns():
 	assert_lte(d.civilian_spawn_points.size(), 400)
 
 
-func test_glass_material_is_metallic_low_roughness():
-	var city := _city_gen.generate_city("Test", Vector3.ZERO, ["Downtown", "District_North", "District_South", "Industrial"])
-	var mmi := city.get_towers()
-	assert_not_null(mmi)
-	var mat := mmi.material_override as StandardMaterial3D
+func test_glass_facade_material_is_metallic_low_roughness():
+	# The GlassFacade.tres resource (task #1) defines the photorealistic glass
+	# facade: dark gray albedo, metallic ~0.85, roughness ~0.15.
+	var mat: StandardMaterial3D = load("res://assets/materials/GlassFacade.tres")
 	assert_not_null(mat)
-	assert_almost_eq(mat.metallic, 0.9, 0.01)
-	assert_almost_eq(mat.roughness, 0.1, 0.01)
+	assert_almost_eq(mat.metallic, 0.85, 0.01)
+	assert_almost_eq(mat.roughness, 0.15, 0.01)
+	# Albedo is dark gray ~#2a3a4a.
+	assert_lt(mat.albedo_color.r, 0.35)
+	assert_lt(mat.albedo_color.g, 0.45)
+	assert_lt(mat.albedo_color.b, 0.55)
 
 
 func test_city_district_control_split():
@@ -333,3 +336,68 @@ func test_road_route_bends_around_impassable():
 	var r: PackedVector2Array = roads[0]
 	# A bent road has more than the two endpoint waypoints.
 	assert_gt(r.size(), 2)
+
+
+# --- Photorealistic city visuals (BuildingGenerator / StreetDetails) ---------
+
+func test_building_generator_builds_composite_mesh():
+	var gen := BuildingGenerator.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 42
+	# A glass tower mesh must have multiple surfaces (base / shaft / roof).
+	var m: ArrayMesh = gen.build_building(true, rng)
+	assert_gt(m.get_surface_count(), 1)
+	# A concrete tower must also build with multiple surfaces.
+	var rng2 := RandomNumberGenerator.new()
+	rng2.seed = 7
+	var m2: ArrayMesh = gen.build_building(false, rng2)
+	assert_gt(m2.get_surface_count(), 1)
+
+
+func test_building_lod_mesh_builds():
+	var gen := BuildingGenerator.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	var m: ArrayMesh = gen.build_building_lod(true, rng)
+	assert_gte(m.get_surface_count(), 1)
+
+
+func test_street_details_spawns_children():
+	var city := _city_gen.generate_city("Street", Vector3.ZERO, ["Downtown", "District_North", "District_South", "Industrial"])
+	add_child(city)
+	var d := city.get_district("Downtown")
+	var street := StreetDetails.new()
+	add_child(street)
+	street.build_for_district(d.footprint, d.district_name)
+	# Asphalt ground, crosswalk decals, trees multimesh, cars multimesh, signs.
+	assert_gt(street.get_child_count(), 0)
+	for c in street.get_children():
+		# Every child is a visual node (MeshInstance3D / MultiMeshInstance3D / Decal).
+		assert_true(c is Node3D)
+	remove_child(street)
+	street.queue_free()
+	remove_child(city)
+	city.queue_free()
+
+
+func test_city_build_visuals_spawns_street_and_barricades_when_split():
+	var city := _city_gen.generate_city("Vis", Vector3.ZERO, ["District_North", "District_South", "Downtown", "Industrial"])
+	add_child(city)
+	# Not split yet -> no barricade layer, but street details should appear.
+	city.build_visuals()
+	var had_barricades := false
+	for c in city.get_children():
+		if c is Node3D and c.name == "Barricades":
+			had_barricades = true
+	assert_false(had_barricades)
+	# Split the city between two factions and rebuild -> barricade layer appears.
+	city.get_district("District_North").control_faction = _faction_red
+	city.get_district("District_South").control_faction = _faction_blue
+	city._update_contested_barricades()
+	var has_barricades := false
+	for c in city.get_children():
+		if c is Node3D and c.name == "Barricades":
+			has_barricades = true
+	assert_true(has_barricades)
+	remove_child(city)
+	city.queue_free()

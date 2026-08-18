@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://bglassfac01"]
+
+; GlassFacade — photorealistic glass-tower facade material for the mega city.
+; Albedo dark gray #2a3a4a, metallic 0.85, roughness 0.15. Pair with screen-space
+; reflections (SSR enabled on the WorldEnvironment) for mirror-like glass reads.
+
+[resource]
+albedo_color = Color(0.165, 0.227, 0.290, 1)
+metallic = 0.85
+metallic_specular = 0.9
+roughness = 0.15
+emission_enabled = false
+shading_mode = 0
+
+

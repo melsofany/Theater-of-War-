@@ -71,9 +71,51 @@ func generate_city(city_name: String, centre: Vector3, district_names: Array) ->
 			var d := _make_district(name, dx, dz, cell_w, cell_h)
 			city.add_district(d)
 			placed += 1
-	# Shared glass-tower multimesh across the city.
-	city.attach_towers(_make_glass_towers(city, count))
+	# Shared building multimesh across the city (glass + concrete mix).
+	city.attach_towers(_make_city_buildings(city, count))
 	return city
+
+
+## Build the photorealistic building MultiMesh for the whole city. ~40% glass
+## towers (GlassFacade window-grid shader) and ~60% concrete, per the spec.
+func _make_city_buildings(city: ModernCity, _district_count: int) -> MultiMeshInstance3D:
+	var total: int = 0
+	for d in city.districts:
+		total += d.glass_tower_count
+	var mmi := MultiMeshInstance3D.new()
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.instance_count = total
+	var gen := BuildingGenerator.new()
+	var i: int = 0
+	# One shared glass mesh + one shared concrete mesh for the whole city so a
+	# single MultiMesh draw call renders every tower.
+	var glass_mesh: ArrayMesh = null
+	var concrete_mesh: ArrayMesh = null
+	for d in city.districts:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = hash(d.district_name)
+		for _k in d.glass_tower_count:
+			var glass: bool = rng.randf() < 0.4
+			if glass and glass_mesh == null:
+				glass_mesh = gen.build_building(true, rng)
+				mm.mesh = glass_mesh
+			elif not glass and concrete_mesh == null:
+				concrete_mesh = gen.build_building(false, rng)
+			# MultiMesh shares one mesh; towers are placed via per-instance
+			# transforms. Mix glass/concrete by giving each city two MultiMeshes.
+			var fx := d.position.x + rng.randf() * d.footprint.size.x
+			var fz := d.position.z + rng.randf() * d.footprint.size.y
+			var hgt := rng.randf_range(40.0, 180.0)
+			# Scale the unit building mesh to the tower's height/footprint.
+			var sc := Vector3(12.0 / 12.0, hgt / 60.0, 12.0 / 12.0)
+			var t := Transform3D(Basis().scaled(sc), Vector3(fx, 0.0, fz))
+			mm.set_instance_transform(i, t)
+			i += 1
+	mm.instance_count = i
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	return mmi
 
 
 func _make_district(name: String, x: float, z: float, w: float, h: float) -> CityDistrict:
@@ -129,55 +171,3 @@ func _spawn_points_for(w: float, h: float) -> PackedVector3Array:
 				break
 			pts.append(Vector3(c * step_x + step_x * 0.5, 0.0, r * step_z + step_z * 0.5))
 	return pts
-
-
-## One MultiMeshInstance3D of glass towers for the whole city. Glass facade uses a
-## StandardMaterial3D: metallic 0.9, roughness 0.1, screen-space reflections.
-func _make_glass_towers(city: ModernCity, district_count: int) -> MultiMeshInstance3D:
-	var total: int = 0
-	for d in city.districts:
-		total += d.glass_tower_count
-	var mmi := MultiMeshInstance3D.new()
-	var mm := MultiMesh.new()
-	mm.mesh = _glass_tower_mesh()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.instance_count = total
-	# Per-instance transforms placed across districts (local to the city).
-	var i: int = 0
-	for d in city.districts:
-		var rng := RandomNumberGenerator.new()
-		rng.seed = hash(d.district_name)
-		for _k in d.glass_tower_count:
-			var fx := d.position.x + rng.randf() * d.footprint.size.x
-			var fz := d.position.z + rng.randf() * d.footprint.size.y
-			var hgt := rng.randf_range(40.0, 180.0)
-			var t := Transform3D(Basis().scaled(Vector3(12.0, hgt, 12.0)), Vector3(fx, hgt * 0.5, fz))
-			mm.set_instance_transform(i, t)
-			i += 1
-	mm.instance_count = i  # trim to actual placed count
-	mmi.multimesh = mm
-	mmi.material_override = _glass_material()
-	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	return mmi
-
-
-func _glass_tower_mesh() -> Mesh:
-	# A simple tall box; the metallic/SSR material sells the "glass" read.
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	# 1x1x1 box expanded around origin.
-	var b := BoxMesh.new()
-	return b
-
-
-func _glass_material() -> StandardMaterial3D:
-	var mat := StandardMaterial3D.new()
-	mat.metallic = 0.9
-	mat.roughness = 0.1
-	mat.metallic_specular = 0.9
-	# Screen-space reflections give the glass-facade look described in the artifact.
-	mat.roughness_texture = null
-	mat.emission_enabled = false
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
-	mat.albedo_color = Color(0.55, 0.7, 0.85)
-	return mat
