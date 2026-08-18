@@ -74,11 +74,22 @@ func _capture() -> void:
         hud.visible = false
     if minimap:
         minimap.visible = false
-    camera.fov = 55.0
-    var cbd_center := Vector3(-65.5, 0.0, -99.9)
-    camera.global_position = cbd_center + Vector3(145.0, 115.0, 155.0)
-    camera.look_at(cbd_center + Vector3(0.0, 35.0, 0.0), Vector3.UP)
+    camera.fov = 52.0
+    _set_zone_guides_visible(world, false)
+    # Cairo War projection from Meta's 16384 map: (4000, 1800) -> (-524, -799).
+    # Use a lower, closer aerial composition matching the supplied reference city.
+    var cbd_center := Vector3(-524.0, 0.0, -799.0)
+    camera.global_position = cbd_center + Vector3(150.0, 128.0, 172.0)
+    camera.look_at(cbd_center + Vector3(0.0, 22.0, 0.0), Vector3.UP)
     await process_frame
     await create_timer(1.0).timeout
     viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/modern_city_overview.png"))
     quit(0)
+
+func _set_zone_guides_visible(node: Node, enabled: bool) -> void:
+    if node == null:
+        return
+    if node is StrategicZone or "ObjectiveBorder" in node.name or "StrategicZone" in node.name:
+        node.visible = enabled
+    for child in node.get_children():
+        _set_zone_guides_visible(child, enabled)

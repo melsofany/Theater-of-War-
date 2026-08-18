@@ -5,13 +5,13 @@
 [ext_resource type="Texture2D" path="res://assets/textures/terrain/rock_roughness.png" id="3_rock_roughness"]
 
 [resource]
-albedo_color = Color(0.62, 0.66, 0.69, 1)
+albedo_color = Color(0.76, 0.78, 0.76, 1)
 albedo_texture = ExtResource("1_rock")
 normal_enabled = true
 normal_texture = ExtResource("2_rock_normal")
 roughness_texture = ExtResource("3_rock_roughness")
-metallic = 0.08
-roughness = 0.72
+metallic = 0.04
+roughness = 0.58
 specular_mode = 1
 uv1_scale = Vector3(3.5, 3.5, 3.5)
 resource_name = "UrbanConcrete_PBR"

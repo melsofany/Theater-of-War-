@@ -2,19 +2,19 @@
 
 [resource]
 transparency = 0
-albedo_color = Color(0.025, 0.055, 0.085, 1)
-metallic = 0.35
-roughness = 0.32
+albedo_color = Color(0.28, 0.48, 0.62, 1)
+metallic = 0.18
+roughness = 0.24
 specular_mode = 2
-specular = 0.72
+specular = 0.58
 clearcoat_enabled = true
-clearcoat = 0.22
+clearcoat = 0.34
 clearcoat_roughness = 0.18
 cull_mode = 0
 shading_mode = 1
 emission_enabled = true
-emission = Color(0.006, 0.018, 0.032, 1)
-emission_energy_multiplier = 0.06
+emission = Color(0.012, 0.028, 0.042, 1)
+emission_energy_multiplier = 0.025
 resource_name = "GlassFacade_DarkReflective"
 
 ; Uses Godot material properties only. No external or proprietary texture is required.

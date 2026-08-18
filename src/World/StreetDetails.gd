@@ -12,6 +12,8 @@ var _asphalt_material: Material
 func build(extent: Vector2, is_contested: bool, seed_value: int) -> void:
 	_rng.seed = abs(seed_value * 977 + 41)
 	_asphalt_material = _load_asphalt_material()
+	_build_city_base(extent)
+	_build_urban_block_ground(extent)
 	_build_roads(extent)
 	_build_crosswalks()
 	_build_tree_multimesh(extent)
@@ -22,6 +24,7 @@ func build(extent: Vector2, is_contested: bool, seed_value: int) -> void:
 
 func _load_asphalt_material() -> Material:
 	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(0.075, 0.085, 0.09, 1.0)
 	material.roughness = 0.88
 	material.uv1_scale = Vector3(8.0, 8.0, 8.0)
 	var albedo := Image.load_from_file("res://assets/textures/terrain/road_asphalt.png")
@@ -36,79 +39,163 @@ func _load_asphalt_material() -> Material:
 		material.roughness_texture = ImageTexture.create_from_image(roughness)
 	return material
 
+func _build_city_base(extent: Vector2) -> void:
+	# A continuous paved slab is the urban fabric beneath blocks and roads.
+	# It is deliberately flat; Terrain remains responsible for the surrounding world.
+	var base_material := StandardMaterial3D.new()
+	base_material.albedo_color = Color(0.18, 0.20, 0.21, 1.0)
+	base_material.roughness = 0.96
+	var base := _box(Vector3(extent.x, 0.18, extent.y), base_material)
+	base.position = Vector3(0.0, 0.05, 0.0)
+	add_child(base)
+
+func _build_urban_block_ground(extent: Vector2) -> void:
+	# Paved urban blocks fill the space between the road corridors. This prevents
+	# the city from floating on a rural green/gray plane in the strategic view.
+	var centers := [-150.0, -60.0, 60.0, 150.0]
+	for z in centers:
+		for x in centers:
+			var block := _box(Vector3(52.0, 0.16, 52.0), CONCRETE_MATERIAL)
+			block.position = Vector3(x, 0.28, z)
+			add_child(block)
+
 func _build_roads(extent: Vector2) -> void:
-	var road_x := _box(Vector3(extent.x, 0.16, 16.0), _asphalt_material)
-	road_x.position.y = 0.42
-	add_child(road_x)
-	var road_z := _box(Vector3(16.0, 0.18, extent.y), _asphalt_material)
-	road_z.position.y = 0.43
-	add_child(road_z)
-	for offset in [-120.0, 120.0]:
-		var side_x := _box(Vector3(extent.x, 0.12, 8.0), _asphalt_material)
-		side_x.position = Vector3(0, 0.40, offset)
-		add_child(side_x)
-		var side_z := _box(Vector3(8.0, 0.12, extent.y), _asphalt_material)
-		side_z.position = Vector3(offset, 0.41, 0)
-		add_child(side_z)
+
+	# The target image is readable because the urban blocks are separated by
+	# broad, dark streets instead of floating on a green plane.
+	var primary_positions: Array[float] = [-120.0, 0.0, 120.0]
+	for z in primary_positions:
+		_add_x_corridor(extent.x, z, 18.0)
+	for x in primary_positions:
+		_add_z_corridor(extent.y, x, 18.0)
+
+func _add_x_corridor(length: float, z: float, width: float) -> void:
+	var road := _box(Vector3(length, 0.20, width), _asphalt_material)
+	road.position = Vector3(0, 0.44, z)
+	add_child(road)
+	_add_sidewalk(Vector3(length, 0.18, 3.0), Vector3(0, 0.59, z - width * 0.5 - 2.0))
+	_add_sidewalk(Vector3(length, 0.18, 3.0), Vector3(0, 0.59, z + width * 0.5 + 2.0))
+	var median := _box(Vector3(length, 0.12, 1.25), FOLIAGE_MATERIAL)
+	median.position = Vector3(0, 0.57, z)
+	add_child(median)
+	for x in range(-160, 161, 16):
+		var dash := _box(Vector3(7.0, 0.045, 0.18), MARKING_MATERIAL)
+		dash.position = Vector3(float(x), 0.57, z - 4.0)
+		add_child(dash)
+		dash = _box(Vector3(7.0, 0.045, 0.18), MARKING_MATERIAL)
+		dash.position = Vector3(float(x), 0.57, z + 4.0)
+		add_child(dash)
+
+func _add_z_corridor(length: float, x: float, width: float) -> void:
+	var road := _box(Vector3(width, 0.20, length), _asphalt_material)
+	road.position = Vector3(x, 0.45, 0)
+	add_child(road)
+	_add_sidewalk(Vector3(3.0, 0.18, length), Vector3(x - width * 0.5 - 2.0, 0.60, 0))
+	_add_sidewalk(Vector3(3.0, 0.18, length), Vector3(x + width * 0.5 + 2.0, 0.60, 0))
+	var median := _box(Vector3(1.25, 0.12, length), FOLIAGE_MATERIAL)
+	median.position = Vector3(x, 0.58, 0)
+	add_child(median)
+	for z in range(-160, 161, 16):
+		var dash := _box(Vector3(0.18, 0.045, 7.0), MARKING_MATERIAL)
+		dash.position = Vector3(x - 4.0, 0.58, float(z))
+		add_child(dash)
+		dash = _box(Vector3(0.18, 0.045, 7.0), MARKING_MATERIAL)
+		dash.position = Vector3(x + 4.0, 0.58, float(z))
+		add_child(dash)
+
+func _add_sidewalk(size: Vector3, position: Vector3) -> void:
+	var sidewalk := _box(size, CONCRETE_MATERIAL)
+	sidewalk.position = position
+	add_child(sidewalk)
 
 func _build_crosswalks() -> void:
-	for offset in [-6.0, -2.0, 2.0, 6.0]:
-		var stripe_x := _box(Vector3(1.4, 0.045, 7.0), MARKING_MATERIAL)
-		stripe_x.position = Vector3(offset, 0.48, 0)
-		add_child(stripe_x)
-		var stripe_z := _box(Vector3(7.0, 0.045, 1.4), MARKING_MATERIAL)
-		stripe_z.position = Vector3(0, 0.49, offset)
-		add_child(stripe_z)
+	var intersections: Array[Vector2] = [
+		Vector2(-120.0, -120.0), Vector2(-120.0, 0.0), Vector2(-120.0, 120.0),
+		Vector2(0.0, -120.0), Vector2(0.0, 0.0), Vector2(0.0, 120.0),
+		Vector2(120.0, -120.0), Vector2(120.0, 0.0), Vector2(120.0, 120.0)
+	]
+	for intersection in intersections:
+		for offset in [-6.0, -2.0, 2.0, 6.0]:
+			var stripe_x := _box(Vector3(1.1, 0.055, 6.5), MARKING_MATERIAL)
+			stripe_x.position = Vector3(intersection.x + offset, 0.70, intersection.y - 11.5)
+			add_child(stripe_x)
+			var stripe_z := _box(Vector3(6.5, 0.055, 1.1), MARKING_MATERIAL)
+			stripe_z.position = Vector3(intersection.x - 11.5, 0.71, intersection.y + offset)
+			add_child(stripe_z)
 
 func _build_tree_multimesh(extent: Vector2) -> void:
 	var trunk_mesh := CylinderMesh.new()
-	trunk_mesh.top_radius = 0.22
-	trunk_mesh.bottom_radius = 0.32
-	trunk_mesh.height = 3.2
-	var trunks := MultiMeshInstance3D.new()
-	var trunk_multi := MultiMesh.new()
-	trunk_multi.transform_format = MultiMesh.TRANSFORM_3D
-	trunk_multi.mesh = trunk_mesh
-	trunk_multi.instance_count = 22
-	for i in range(trunk_multi.instance_count):
-		var x := _rng.randf_range(-extent.x * 0.46, extent.x * 0.46)
-		var z := _rng.randf_range(-extent.y * 0.46, extent.y * 0.46)
-		trunk_multi.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(x, 1.6, z)))
-	trunks.multimesh = trunk_multi
-	trunks.material_override = CONCRETE_MATERIAL
-	add_child(trunks)
-
+	trunk_mesh.top_radius = 0.20
+	trunk_mesh.bottom_radius = 0.30
+	trunk_mesh.height = 3.6
+	trunk_mesh.radial_segments = 8
+	var crowns := MultiMeshInstance3D.new()
 	var crown_mesh := SphereMesh.new()
 	crown_mesh.radius = 2.0
 	crown_mesh.height = 3.8
-	var crowns := MultiMeshInstance3D.new()
+	crown_mesh.radial_segments = 12
+	crown_mesh.rings = 6
 	var crown_multi := MultiMesh.new()
 	crown_multi.transform_format = MultiMesh.TRANSFORM_3D
 	crown_multi.mesh = crown_mesh
-	crown_multi.instance_count = trunk_multi.instance_count
-	for i in range(crown_multi.instance_count):
-		var transform := trunk_multi.get_instance_transform(i)
-		transform.origin.y = 4.1
-		transform.origin.x += _rng.randf_range(-0.6, 0.6)
-		transform.origin.z += _rng.randf_range(-0.6, 0.6)
-		crown_multi.set_instance_transform(i, transform)
+	var tree_positions: Array[Vector3] = []
+	for z in [-131.0, -11.0, 109.0]:
+		for x in range(-150, 151, 30):
+			tree_positions.append(Vector3(float(x), 4.1, z))
+	for x in [-131.0, -11.0, 109.0]:
+		for z in range(-150, 151, 30):
+			tree_positions.append(Vector3(x, 4.1, float(z)))
+	crown_multi.instance_count = tree_positions.size()
+	for i in range(tree_positions.size()):
+		var position := tree_positions[i]
+		position.x += _rng.randf_range(-1.5, 1.5)
+		position.z += _rng.randf_range(-1.5, 1.5)
+		crown_multi.set_instance_transform(i, Transform3D(Basis.IDENTITY, position))
 	crowns.multimesh = crown_multi
 	crowns.material_override = FOLIAGE_MATERIAL
 	add_child(crowns)
 
+	var trunks := MultiMeshInstance3D.new()
+	var trunk_multi := MultiMesh.new()
+	trunk_multi.transform_format = MultiMesh.TRANSFORM_3D
+	trunk_multi.mesh = trunk_mesh
+	trunk_multi.instance_count = tree_positions.size()
+	for i in range(tree_positions.size()):
+		var trunk_position := tree_positions[i]
+		trunk_position.y = 1.8
+		trunk_multi.set_instance_transform(i, Transform3D(Basis.IDENTITY, trunk_position))
+	trunks.multimesh = trunk_multi
+	trunks.material_override = CONCRETE_MATERIAL
+	add_child(trunks)
+
 func _build_park_islands(extent: Vector2) -> void:
-	for pos in [Vector3(-70, 0.2, -70), Vector3(70, 0.2, 70), Vector3(-70, 0.2, 70), Vector3(70, 0.2, -70)]:
-		var island := _box(Vector3(34.0, 0.22, 34.0), FOLIAGE_MATERIAL)
-		island.position = pos
+	var positions: Array[Vector3] = [
+		Vector3(-70, 0.2, -70), Vector3(70, 0.2, 70),
+		Vector3(-70, 0.2, 70), Vector3(70, 0.2, -70)
+	]
+	for pos in positions:
+		var curb := _box(Vector3(38.0, 0.30, 38.0), CONCRETE_MATERIAL)
+		curb.position = pos
+		add_child(curb)
+		var island := _box(Vector3(34.0, 0.24, 34.0), FOLIAGE_MATERIAL)
+		island.position = pos + Vector3(0, 0.25, 0)
 		add_child(island)
+		var water := _box(Vector3(8.0, 0.06, 4.0), WINDOW_MATERIAL)
+		water.position = pos + Vector3(0, 0.42, 0)
+		add_child(water)
 
 func _build_parked_cars(extent: Vector2) -> void:
-	for i in range(8):
-		var car := _box(Vector3(3.8, 1.0, 7.0), WINDOW_MATERIAL)
-		car.position = Vector3(-extent.x * 0.35 + i * 9.0, 0.62, -11.0)
+	var car_colors: Array[Color] = [Color(0.82, 0.10, 0.06), Color(0.08, 0.16, 0.22), Color(0.85, 0.72, 0.16), Color(0.65, 0.68, 0.70)]
+	for i in range(12):
+		var car_material := StandardMaterial3D.new()
+		car_material.albedo_color = car_colors[i % car_colors.size()]
+		car_material.metallic = 0.35
+		car_material.roughness = 0.30
+		var car := _box(Vector3(3.0, 0.9, 6.0), car_material)
+		car.position = Vector3(-150.0 + float(i % 6) * 10.0, 0.82, -111.0 + float(i / 6) * 222.0)
 		add_child(car)
-		var roof := _box(Vector3(3.0, 0.35, 3.3), CONCRETE_MATERIAL)
-		roof.position = car.position + Vector3(0, 0.68, 0)
+		var roof := _box(Vector3(2.2, 0.28, 2.4), WINDOW_MATERIAL)
+		roof.position = car.position + Vector3(0, 0.58, 0)
 		add_child(roof)
 
 func _build_barricades() -> void:
