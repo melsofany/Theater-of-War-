@@ -53,7 +53,7 @@ script = ExtResource("1_main")
 [node name="HotfixFullWorld" type="Node3D" parent="."]
 script = ExtResource("9_hotfix")
 fix_transparency = true
-add_ground = true
+add_ground = false
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_military")

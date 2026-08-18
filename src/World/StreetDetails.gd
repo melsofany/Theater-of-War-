@@ -4,6 +4,7 @@ class_name StreetDetails
 const CONCRETE_MATERIAL: Material = preload("res://assets/materials/UrbanConcrete.tres")
 const FOLIAGE_MATERIAL: Material = preload("res://assets/materials/UrbanFoliage.tres")
 const WINDOW_MATERIAL: Material = preload("res://assets/materials/WindowGrid.tres")
+const MARKING_MATERIAL: Material = preload("res://assets/materials/RoadMarking.tres")
 
 var _rng := RandomNumberGenerator.new()
 var _asphalt_material: Material
@@ -37,26 +38,26 @@ func _load_asphalt_material() -> Material:
 
 func _build_roads(extent: Vector2) -> void:
 	var road_x := _box(Vector3(extent.x, 0.16, 16.0), _asphalt_material)
-	road_x.position.y = 0.08
+	road_x.position.y = 0.42
 	add_child(road_x)
 	var road_z := _box(Vector3(16.0, 0.18, extent.y), _asphalt_material)
-	road_z.position.y = 0.09
+	road_z.position.y = 0.43
 	add_child(road_z)
 	for offset in [-120.0, 120.0]:
 		var side_x := _box(Vector3(extent.x, 0.12, 8.0), _asphalt_material)
-		side_x.position = Vector3(0, 0.07, offset)
+		side_x.position = Vector3(0, 0.40, offset)
 		add_child(side_x)
 		var side_z := _box(Vector3(8.0, 0.12, extent.y), _asphalt_material)
-		side_z.position = Vector3(offset, 0.06, 0)
+		side_z.position = Vector3(offset, 0.41, 0)
 		add_child(side_z)
 
 func _build_crosswalks() -> void:
 	for offset in [-6.0, -2.0, 2.0, 6.0]:
-		var stripe_x := _box(Vector3(1.4, 0.035, 7.0), CONCRETE_MATERIAL)
-		stripe_x.position = Vector3(offset, 0.19, 0)
+		var stripe_x := _box(Vector3(1.4, 0.045, 7.0), MARKING_MATERIAL)
+		stripe_x.position = Vector3(offset, 0.48, 0)
 		add_child(stripe_x)
-		var stripe_z := _box(Vector3(7.0, 0.04, 1.4), CONCRETE_MATERIAL)
-		stripe_z.position = Vector3(0, 0.20, offset)
+		var stripe_z := _box(Vector3(7.0, 0.045, 1.4), MARKING_MATERIAL)
+		stripe_z.position = Vector3(0, 0.49, offset)
 		add_child(stripe_z)
 
 func _build_tree_multimesh(extent: Vector2) -> void:

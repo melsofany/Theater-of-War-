@@ -41,7 +41,10 @@ func _build_district_blocks() -> void:
 	for row in range(building_rows):
 		for col in range(building_columns):
 			var center := Vector3(x0 + col * step_x, 0.0, z0 + row * step_z)
-			var height := _rng.randf_range(28.0, 76.0)
+			var profile := _rng.randf()
+			var height := _rng.randf_range(18.0, 34.0) if profile < 0.28 else _rng.randf_range(34.0, 68.0)
+			if profile > 0.88:
+				height = _rng.randf_range(68.0, 92.0)
 			var width := _rng.randf_range(24.0, 38.0)
 			var depth := _rng.randf_range(24.0, 38.0)
 			_build_building(center, Vector3(width, height, depth), (row + col) % 5 == 0)
@@ -60,6 +63,7 @@ func _build_building(center: Vector3, size: Vector3, use_kenney_detail: bool) ->
 	core.position.y = size.y * 0.5 + 3.0
 	root.add_child(core)
 
+	var facade_material := _facade_variant()
 	var facade_offsets := [
 		Vector3(0, size.y * 0.5 + 3.0, -size.z * 0.465),
 		Vector3(0, size.y * 0.5 + 3.0, size.z * 0.465),
@@ -73,7 +77,7 @@ func _build_building(center: Vector3, size: Vector3, use_kenney_detail: bool) ->
 		Vector3(0.16, size.y * 0.94, size.z * 0.88)
 	]
 	for i in range(4):
-		var panel := _mesh_box(facade_sizes[i], GLASS_MATERIAL)
+		var panel := _mesh_box(facade_sizes[i], facade_material)
 		panel.position = facade_offsets[i]
 		root.add_child(panel)
 		var windows := _mesh_box(facade_sizes[i] + Vector3(0.025, -1.5, 0.025), WINDOW_MATERIAL)
@@ -87,6 +91,7 @@ func _build_building(center: Vector3, size: Vector3, use_kenney_detail: bool) ->
 		belt.position.y = 3.0 + floor * 8.0
 		root.add_child(belt)
 
+	_add_balcony_bands(root, size)
 	var roof := _mesh_box(Vector3(size.x + 2.0, 0.7, size.z + 2.0), CONCRETE_MATERIAL)
 	roof.position.y = size.y + 3.35
 	root.add_child(roof)
@@ -94,6 +99,29 @@ func _build_building(center: Vector3, size: Vector3, use_kenney_detail: bool) ->
 	_add_shop_fronts(root, size)
 	if use_kenney_detail:
 		_add_kenney_detail(root, size)
+
+func _facade_variant() -> Material:
+	var variant := GLASS_MATERIAL.duplicate() as StandardMaterial3D
+	var tone := _rng.randf()
+	if tone < 0.33:
+		variant.albedo_color = Color(0.08, 0.16, 0.23, 1.0)
+	elif tone < 0.66:
+		variant.albedo_color = Color(0.16, 0.25, 0.31, 1.0)
+	else:
+		variant.albedo_color = Color(0.24, 0.31, 0.34, 1.0)
+	variant.metallic = 0.72
+	variant.roughness = 0.22
+	return variant
+
+func _add_balcony_bands(root: Node3D, size: Vector3) -> void:
+	if size.y < 28.0:
+		return
+	var levels := [size.y * 0.34, size.y * 0.68]
+	for level in levels:
+		for side in [-1.0, 1.0]:
+			var balcony := _mesh_box(Vector3(size.x * 0.76, 0.28, 1.15), CONCRETE_MATERIAL)
+			balcony.position = Vector3(0.0, level + 3.0, side * (size.z * 0.50 + 0.42))
+			root.add_child(balcony)
 
 func _add_shop_fronts(root: Node3D, size: Vector3) -> void:
 	for side in [-1.0, 1.0]:
@@ -132,7 +160,8 @@ func _add_kenney_detail(root: Node3D, size: Vector3) -> void:
 	var detail: Node3D = _kenney_detail_scene.duplicate()
 	detail.name = "Kenney_CC0_FacadeDetail"
 	detail.position = Vector3(size.x * 0.30, 3.0, size.z * 0.51)
-	detail.scale = Vector3(3.0, 3.0, 3.0)
+	detail.rotation.y = _rng.randf_range(-0.20, 0.20)
+	detail.scale = Vector3(8.0, 8.0, 8.0)
 	root.add_child(detail)
 
 func _build_street_grid() -> void:
