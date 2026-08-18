@@ -74,6 +74,7 @@ func _build_features() -> void:
 			real_city.global_position = pos
 			var contested: bool = bool(city.get("contested", false)) or city_index % 7 == 0
 			if real_city.has_method("build_city"):
+				real_city.showcase_density = str(city["name"]).to_lower().find("cairo") >= 0
 				real_city.build_city(str(city["name"]), city_index, contested)
 
 	for z in map_data.zones:

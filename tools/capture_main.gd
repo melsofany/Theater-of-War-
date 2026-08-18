@@ -74,13 +74,13 @@ func _capture() -> void:
         hud.visible = false
     if minimap:
         minimap.visible = false
-    camera.fov = 52.0
+    camera.fov = 44.0
     _set_zone_guides_visible(world, false)
     # Cairo War projection from Meta's 16384 map: (4000, 1800) -> (-524, -799).
     # Use a lower, closer aerial composition matching the supplied reference city.
     var cbd_center := Vector3(-524.0, 0.0, -799.0)
-    camera.global_position = cbd_center + Vector3(150.0, 128.0, 172.0)
-    camera.look_at(cbd_center + Vector3(0.0, 22.0, 0.0), Vector3.UP)
+    camera.global_position = cbd_center + Vector3(158.0, 118.0, 158.0)
+    camera.look_at(cbd_center + Vector3(28.0, 18.0, 28.0), Vector3.UP)
     await process_frame
     await create_timer(1.0).timeout
     viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(shot_dir + "/modern_city_overview.png"))

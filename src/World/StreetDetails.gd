@@ -171,13 +171,21 @@ func _build_tree_multimesh(extent: Vector2) -> void:
 	trunk_mesh.radial_segments = 8
 	var crowns := MultiMeshInstance3D.new()
 	var crown_mesh := SphereMesh.new()
-	crown_mesh.radius = 2.0
-	crown_mesh.height = 3.8
-	crown_mesh.radial_segments = 12
-	crown_mesh.rings = 6
+	crown_mesh.radius = 2.35
+	crown_mesh.height = 4.4
+	crown_mesh.radial_segments = 16
+	crown_mesh.rings = 8
 	var crown_multi := MultiMesh.new()
 	crown_multi.transform_format = MultiMesh.TRANSFORM_3D
 	crown_multi.mesh = crown_mesh
+	var upper_crown_mesh := SphereMesh.new()
+	upper_crown_mesh.radius = 1.45
+	upper_crown_mesh.height = 2.9
+	upper_crown_mesh.radial_segments = 14
+	upper_crown_mesh.rings = 7
+	var upper_crown_multi := MultiMesh.new()
+	upper_crown_multi.transform_format = MultiMesh.TRANSFORM_3D
+	upper_crown_multi.mesh = upper_crown_mesh
 	var tree_positions: Array[Vector3] = []
 	for z in [-131.0, -11.0, 109.0]:
 		for x in range(-150, 151, 30):
@@ -194,6 +202,15 @@ func _build_tree_multimesh(extent: Vector2) -> void:
 	crowns.multimesh = crown_multi
 	crowns.material_override = FOLIAGE_MATERIAL
 	add_child(crowns)
+	var upper_crowns := MultiMeshInstance3D.new()
+	upper_crowns.multimesh = upper_crown_multi
+	upper_crowns.material_override = FOLIAGE_MATERIAL
+	upper_crown_multi.instance_count = tree_positions.size()
+	for i in range(tree_positions.size()):
+		var upper_position := tree_positions[i] + Vector3(0.25, 2.0, -0.18)
+		upper_crown_multi.set_instance_transform(i, Transform3D(Basis.IDENTITY, upper_position))
+	upper_crowns.multimesh = upper_crown_multi
+	add_child(upper_crowns)
 
 	var trunks := MultiMeshInstance3D.new()
 	var trunk_multi := MultiMesh.new()

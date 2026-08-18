@@ -10,6 +10,7 @@ class_name PhotorealCityGenerator
 @export var building_rows: int = 4
 @export var building_columns: int = 4
 @export var contested: bool = false
+@export var showcase_density: bool = false
 
 const GLASS_MATERIAL: Material = preload("res://assets/materials/GlassFacade.tres")
 const WINDOW_MATERIAL: Material = preload("res://assets/materials/WindowGrid.tres")
@@ -45,14 +46,18 @@ func build_city(city_name: String, city_index: int, is_contested: bool = false) 
 	_build_district_blocks()
 
 func _build_district_blocks() -> void:
-	# Four urban blocks in each direction leave room for a real street grid.
-	var x_values := [-138.0, -46.0, 46.0, 138.0]
-	var z_values := [-138.0, -46.0, 46.0, 138.0]
-	for row in range(min(building_rows, z_values.size())):
-		for col in range(min(building_columns, x_values.size())):
-			var index := row * 4 + col
+	# The showcase district uses a denser five-by-five urban fabric; streamed cities keep the lighter grid.
+	var x_values := [-150.0, -60.0, 60.0, 150.0]
+	var z_values := [-150.0, -60.0, 60.0, 150.0]
+	if showcase_density:
+		x_values = [-150.0, -75.0, 0.0, 75.0, 150.0]
+		z_values = [-150.0, -75.0, 0.0, 75.0, 150.0]
+	var width := x_values.size()
+	for row in range(min(building_rows + (1 if showcase_density else 0), z_values.size())):
+		for col in range(min(building_columns + (1 if showcase_density else 0), x_values.size())):
+			var index := row * width + col
 			var center := Vector3(x_values[col], 0.0, z_values[row])
-			var style := index % 7
+			var style := index % 10
 			_build_building(center, _building_profile(style), style)
 
 func _building_profile(style: int) -> Vector3:
@@ -69,6 +74,14 @@ func _building_profile(style: int) -> Vector3:
 			return Vector3(46.0, 24.0, 38.0)
 		5:
 			return Vector3(28.0, 72.0, 28.0)
+		6:
+			return Vector3(36.0, 40.0, 32.0)
+		7:
+			return Vector3(24.0, 92.0, 26.0)
+		8:
+			return Vector3(54.0, 36.0, 34.0)
+		9:
+			return Vector3(30.0, 54.0, 44.0)
 		_:
 			return Vector3(36.0, 40.0, 32.0)
 
@@ -119,10 +132,29 @@ func _build_building(center: Vector3, size: Vector3, style: int) -> void:
 		_add_top_setback(root, size, podium_height, facade_material)
 	if style == 1 or style == 2 or style == 5:
 		_add_balcony_bands(root, size, podium_height)
-	if style == 0 or style == 5:
+	if style == 0 or style == 5 or style == 7:
 		_add_kenney_detail(root, size)
+	if style == 2 or style == 8:
+		_add_rounded_podium(root, size, podium_height)
 	_add_lowrise_annexes(root, size, podium_height)
 	_add_roof_garden(root, size, podium_height)
+
+func _add_rounded_podium(root: Node3D, size: Vector3, podium_height: float) -> void:
+	var curved := CylinderMesh.new()
+	curved.top_radius = size.x * 0.38
+	curved.bottom_radius = size.x * 0.46
+	curved.height = podium_height * 1.25
+	curved.radial_segments = 24
+	var podium := MeshInstance3D.new()
+	podium.mesh = curved
+	podium.material_override = GLASS_MATERIAL
+	podium.scale = Vector3(1.0, 1.0, size.z / maxf(size.x, 0.1))
+	podium.position.y = podium_height * 0.62
+	root.add_child(podium)
+	var roof := _mesh_cylinder(size.x * 0.48, 0.28, CONCRETE_MATERIAL)
+	roof.scale = Vector3(1.0, 1.0, size.z / maxf(size.x, 0.1))
+	roof.position.y = podium_height * 1.30
+	root.add_child(roof)
 
 func _add_lowrise_annexes(root: Node3D, size: Vector3, podium_height: float) -> void:
 	if size.y < 28.0:
@@ -206,14 +238,15 @@ func _override_model_material(node: Node) -> void:
 func _facade_variant(style: int) -> Material:
 	var variant := GLASS_MATERIAL.duplicate() as StandardMaterial3D
 	var palette := [
-		Color(0.36, 0.55, 0.68, 1.0),
-		Color(0.48, 0.64, 0.72, 1.0),
-		Color(0.60, 0.68, 0.67, 1.0),
-		Color(0.70, 0.72, 0.68, 1.0)
+		Color(0.14, 0.27, 0.42, 1.0),
+		Color(0.22, 0.38, 0.54, 1.0),
+		Color(0.34, 0.46, 0.52, 1.0),
+		Color(0.52, 0.55, 0.51, 1.0),
+		Color(0.28, 0.40, 0.48, 1.0)
 	]
 	variant.albedo_color = palette[style % palette.size()]
-	variant.metallic = 0.22 + float(style % 3) * 0.04
-	variant.roughness = 0.30 + float(style % 2) * 0.05
+	variant.metallic = 0.30 + float(style % 4) * 0.06
+	variant.roughness = 0.18 + float(style % 3) * 0.04
 	return variant
 
 func _add_podium_glass(root: Node3D, size: Vector3, podium_height: float) -> void:

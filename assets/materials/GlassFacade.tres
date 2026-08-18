@@ -2,18 +2,18 @@
 
 [resource]
 transparency = 0
-albedo_color = Color(0.28, 0.48, 0.62, 1)
-metallic = 0.18
-roughness = 0.24
+albedo_color = Color(0.18, 0.36, 0.54, 1)
+metallic = 0.38
+roughness = 0.18
 specular_mode = 2
-specular = 0.58
+specular = 0.72
 clearcoat_enabled = true
 clearcoat = 0.34
 clearcoat_roughness = 0.18
 cull_mode = 0
 shading_mode = 1
 emission_enabled = true
-emission = Color(0.012, 0.028, 0.042, 1)
+emission = Color(0.006, 0.016, 0.028, 1)
 emission_energy_multiplier = 0.025
 resource_name = "GlassFacade_DarkReflective"
 
