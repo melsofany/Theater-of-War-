@@ -16,8 +16,16 @@ const WINDOW_MATERIAL: Material = preload("res://assets/materials/WindowGrid.tre
 const CONCRETE_MATERIAL: Material = preload("res://assets/materials/UrbanConcrete.tres")
 const FOLIAGE_MATERIAL: Material = preload("res://assets/materials/UrbanFoliage.tres")
 const ASPHALT_MATERIAL: Material = preload("res://assets/materials/asphalt.tres")
+const KAYKIT_LOWRISE_PATHS: Array[String] = [
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/building_A.glb",
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/building_B.glb",
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/building_C.glb",
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/building_D.glb",
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/building_E.glb"
+]
 
 var _kenney_detail_scene: Node3D = null
+var _kaykit_lowrise_scenes: Array[Node3D] = []
 var _kenney_lowrise_scenes: Array[Node3D] = []
 var _kenney_load_attempted := false
 var _rng := RandomNumberGenerator.new()
@@ -132,6 +140,7 @@ func _add_lowrise_annexes(root: Node3D, size: Vector3, podium_height: float) -> 
 		annex_roof.position = annex.position + Vector3(0, annex_height * 0.5 + 0.25, 0)
 		root.add_child(annex_roof)
 	_add_kenney_lowrise(root, size, podium_height)
+	_add_kaykit_lowrise(root, size, podium_height)
 	_add_lowrise_storefronts(root, size, podium_height)
 
 func _add_lowrise_storefronts(root: Node3D, size: Vector3, podium_height: float) -> void:
@@ -169,6 +178,19 @@ func _add_kenney_lowrise(root: Node3D, size: Vector3, podium_height: float) -> v
 		model.rotation.y = -0.08 if i == 0 else 0.10
 		model.scale = Vector3(14.0, 14.0, 14.0)
 		_override_model_material(model)
+		root.add_child(model)
+
+func _add_kaykit_lowrise(root: Node3D, size: Vector3, podium_height: float) -> void:
+	if _kaykit_lowrise_scenes.is_empty() or size.y < 24.0:
+		return
+	var count := 2 if size.y > 55.0 else 1
+	for i in range(count):
+		var model: Node3D = _kaykit_lowrise_scenes[(_city_index + i + int(size.y)) % _kaykit_lowrise_scenes.size()].duplicate()
+		model.name = "KayKit_CC0_UrbanLowrise_%s" % i
+		var side := -1.0 if i == 0 else 1.0
+		model.position = Vector3(side * size.x * 0.34, podium_height + 0.18, size.z * 0.25)
+		model.rotation.y = (_rng.randf_range(-0.18, 0.18) + PI * 0.5 * float(i))
+		model.scale = Vector3.ONE * (7.0 if size.y < 45.0 else 8.0)
 		root.add_child(model)
 
 func _override_model_material(node: Node) -> void:
@@ -298,6 +320,13 @@ func _load_kenney_detail() -> void:
 			var low_scene := low_document.generate_scene(low_state)
 			if low_scene is Node3D:
 				_kenney_lowrise_scenes.append(low_scene)
+	for path in KAYKIT_LOWRISE_PATHS:
+		var kay_document := GLTFDocument.new()
+		var kay_state := GLTFState.new()
+		if kay_document.append_from_file(path, kay_state) == OK:
+			var kay_scene := kay_document.generate_scene(kay_state)
+			if kay_scene is Node3D:
+				_kaykit_lowrise_scenes.append(kay_scene)
 
 func _add_kenney_detail(root: Node3D, size: Vector3) -> void:
 	if _kenney_detail_scene == null:

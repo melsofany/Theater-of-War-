@@ -5,12 +5,25 @@ const CONCRETE_MATERIAL: Material = preload("res://assets/materials/UrbanConcret
 const FOLIAGE_MATERIAL: Material = preload("res://assets/materials/UrbanFoliage.tres")
 const WINDOW_MATERIAL: Material = preload("res://assets/materials/WindowGrid.tres")
 const MARKING_MATERIAL: Material = preload("res://assets/materials/RoadMarking.tres")
+const KAYKIT_CAR_PATHS: Array[String] = [
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/car_sedan.glb",
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/car_taxi.glb",
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/car_hatchback.glb",
+	"res://assets/cc0/kaykit_city_builder_bits/Assets/glb/car_stationwagon.glb"
+]
+const KAYKIT_STREETLIGHT_PATH := "res://assets/cc0/kaykit_city_builder_bits/Assets/glb/streetlight.glb"
+const KAYKIT_BENCH_PATH := "res://assets/cc0/kaykit_city_builder_bits/Assets/glb/bench.glb"
 
+var _kaykit_car_scenes: Array[Node3D] = []
+var _kaykit_streetlight_scene: Node3D = null
+var _kaykit_bench_scene: Node3D = null
+var _kaykit_load_attempted := false
 var _rng := RandomNumberGenerator.new()
 var _asphalt_material: Material
 
 func build(extent: Vector2, is_contested: bool, seed_value: int) -> void:
 	_rng.seed = abs(seed_value * 977 + 41)
+	_load_kaykit_assets()
 	_asphalt_material = _load_asphalt_material()
 	_build_city_base(extent)
 	_build_urban_block_ground(extent)
@@ -19,8 +32,31 @@ func build(extent: Vector2, is_contested: bool, seed_value: int) -> void:
 	_build_tree_multimesh(extent)
 	_build_park_islands(extent)
 	_build_parked_cars(extent)
+	_build_kaykit_street_props()
 	if is_contested:
 		_build_barricades()
+
+func _load_kaykit_assets() -> void:
+	if _kaykit_load_attempted:
+		return
+	_kaykit_load_attempted = true
+	for path in KAYKIT_CAR_PATHS:
+		var document := GLTFDocument.new()
+		var state := GLTFState.new()
+		if document.append_from_file(path, state) == OK:
+			var scene := document.generate_scene(state)
+			if scene is Node3D:
+				_kaykit_car_scenes.append(scene)
+	for path_and_target in [[KAYKIT_STREETLIGHT_PATH, "streetlight"], [KAYKIT_BENCH_PATH, "bench"]]:
+		var document := GLTFDocument.new()
+		var state := GLTFState.new()
+		if document.append_from_file(path_and_target[0], state) == OK:
+			var scene := document.generate_scene(state)
+			if scene is Node3D:
+				if path_and_target[1] == "streetlight":
+					_kaykit_streetlight_scene = scene
+				else:
+					_kaykit_bench_scene = scene
 
 func _load_asphalt_material() -> Material:
 	var material := StandardMaterial3D.new()
@@ -185,6 +221,9 @@ func _build_park_islands(extent: Vector2) -> void:
 		add_child(water)
 
 func _build_parked_cars(extent: Vector2) -> void:
+	# Keep a procedural fallback, but prefer the detailed CC0 KayKit vehicles below.
+	if not _kaykit_car_scenes.is_empty():
+		return
 	var car_colors: Array[Color] = [Color(0.82, 0.10, 0.06), Color(0.08, 0.16, 0.22), Color(0.85, 0.72, 0.16), Color(0.65, 0.68, 0.70)]
 	for i in range(12):
 		var car_material := StandardMaterial3D.new()
@@ -197,6 +236,51 @@ func _build_parked_cars(extent: Vector2) -> void:
 		var roof := _box(Vector3(2.2, 0.28, 2.4), WINDOW_MATERIAL)
 		roof.position = car.position + Vector3(0, 0.58, 0)
 		add_child(roof)
+
+func _build_kaykit_street_props() -> void:
+	var car_positions: Array[Vector3] = [
+		Vector3(-150.0, 0.82, -111.0), Vector3(-120.0, 0.82, -111.0),
+		Vector3(-90.0, 0.82, -111.0), Vector3(90.0, 0.82, 111.0),
+		Vector3(120.0, 0.82, 111.0), Vector3(150.0, 0.82, 111.0),
+		Vector3(-111.0, 0.82, -150.0), Vector3(111.0, 0.82, 150.0)
+	]
+	for i in range(car_positions.size()):
+		var car: Node3D = _kaykit_car_scenes[i % _kaykit_car_scenes.size()].duplicate()
+		car.name = "KayKit_CC0_Car_%s" % i
+		car.scale = Vector3.ONE * 6.0
+		car.position = car_positions[i]
+		car.rotation.y = PI * 0.5 if i >= 6 else 0.0
+		add_child(car)
+
+	var light_positions: Array[Vector3] = [
+		Vector3(-132.0, 0.60, -12.0), Vector3(-132.0, 0.60, 108.0),
+		Vector3(132.0, 0.60, -108.0), Vector3(132.0, 0.60, 12.0),
+		Vector3(-12.0, 0.60, -132.0), Vector3(108.0, 0.60, -132.0),
+		Vector3(-108.0, 0.60, 132.0), Vector3(12.0, 0.60, 132.0)
+	]
+	for i in range(light_positions.size()):
+		if _kaykit_streetlight_scene == null:
+			break
+		var light: Node3D = _kaykit_streetlight_scene.duplicate()
+		light.name = "KayKit_CC0_Streetlight_%s" % i
+		light.scale = Vector3.ONE * 6.0
+		light.position = light_positions[i]
+		light.rotation.y = PI if i % 2 == 0 else 0.0
+		add_child(light)
+
+	var bench_positions: Array[Vector3] = [
+		Vector3(-70.0, 0.52, -70.0), Vector3(70.0, 0.52, 70.0),
+		Vector3(-70.0, 0.52, 70.0), Vector3(70.0, 0.52, -70.0)
+	]
+	for i in range(bench_positions.size()):
+		if _kaykit_bench_scene == null:
+			break
+		var bench: Node3D = _kaykit_bench_scene.duplicate()
+		bench.name = "KayKit_CC0_Bench_%s" % i
+		bench.scale = Vector3.ONE * 10.0
+		bench.position = bench_positions[i]
+		bench.rotation.y = PI * 0.25 * float(i)
+		add_child(bench)
 
 func _build_barricades() -> void:
 	for side in [-1.0, 1.0]:

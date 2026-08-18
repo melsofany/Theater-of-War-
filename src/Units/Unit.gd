@@ -209,7 +209,7 @@ func _meta_asset_path() -> String:
 		UnitType.Category.INFANTRY:
 			return "res://assets/meta_units/infantry_topdown.png"
 		UnitType.Category.SNIPER:
-			return "res://assets/sprites/units/sniper.png"
+			return "res://assets/meta_units/sniper_topdown.png"
 		UnitType.Category.VEHICLE:
 			return "res://assets/meta_units/vehicle_apc_topdown.png"
 		UnitType.Category.TANK:
@@ -244,8 +244,8 @@ func _add_meta_asset_sprite() -> bool:
 	sprite.pixel_size = 0.00165
 	sprite.position = Vector3(0, 1.15, 0)
 	if unit_type.category == UnitType.Category.SNIPER:
-		sprite.pixel_size = 0.0028
-		sprite.position.y = 0.72
+		sprite.pixel_size = 0.00145
+		sprite.position.y = 0.82
 	visual_model.add_child(sprite)
 	return true
 
