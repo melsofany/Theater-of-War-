@@ -16,11 +16,13 @@ one tree. No pull requests are opened; branches are pushed directly.
   Campaign.
 - Tests: GUT, `tests/*.gd`, run via
   `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit`.
-  Latest: 134 passing / 324 asserts (0 failing, 0 pending/risky) — verified on
-  the consolidated branch after the Phase 10c merge + the first 10c+ batch
-  (SpatialGrid wired into intelligence hot path; netcode state replication
-  made testable with dynamic-spawn detection; streaming terrain rendering
-  wired to ChunkManager; deterministic balance regression guard).
+  Latest: 158 passing / 409 asserts (4 failing — all missing binary assets:
+  combat SFX, menu music, menu background, unit icons; pre-existing, deferred
+  to `docs/MANUS_ASSETS_PROMPT.md`). Includes the `tests/test_mega_map.gd`
+  suite (26 tests) for the Phase 10c+ mega world map: 14 biomes + terrain
+  movement costs, 6 glass cities with district capture-split, civilian flee +
+  exodus intel + economy impact, urban guerrilla (cover ×1.8, LOS blocking),
+  9-chunk streaming, cut supply routes, OSM road network.
 - Scene validation: `godot --headless --script tools/validate_project.gd`.
 - Godot binary expected at `$HOME/godot/godot` (add to PATH).
 
@@ -48,9 +50,28 @@ Phases 0–10c complete (the two parallel 10c tracks are merged on
 `integration/consolidated`, now also `Main`). 10c+ in progress: SpatialGrid
 wired into the intelligence hot path (DONE), netcode state replication made
 testable + dynamic-spawn detection (DONE), streaming terrain rendering wired
-to ChunkManager (DONE), deterministic balance regression guard (DONE). Next:
-full art/audio pass (external asset generation), campaigns, true lockstep
-multiplayer sim, instanced rendering/LOD, balance playtesting.
+to ChunkManager (DONE), deterministic balance regression guard (DONE),
+**mega world map (DONE — branch `phase-mega-world`)**: `src/World/MegaWorldGenerator.gd`
+(4096² biome grid, 14 biomes, Terrarium elevation decode, terrain movement
+costs + `travel_time_seconds`), `src/World/ModernCityGenerator.gd` +
+`ModernCity.gd` + `CityDistrict.gd` (6 glass cities incl. "معقل الرماد",
+4–6 districts each, MultiMesh glass towers StandardMaterial3D metallic 0.9
+roughness 0.1 SSR, 150–400 civilian spawn points, per-district capture so a
+city can be split between armies), `src/Units/CivilianNPC.gd` (flee on combat
+intensity → exodus intel report + Economy income drop),
+`src/Combat/UrbanWarfareSystem.gd` (guerrilla hide/ambush via SpatialGrid,
+cover ×1.8, tower LOS blocking, only when a city is split),
+`src/World/RoadNetworkGenerator.gd` (OSM/Overpass roads with procedural
+fallback; supply trucks depend on them), `Logistics.register_contested_city` /
+`is_supply_route_cut` / `supply_travel_time` (base unit speed 4 m/s),
+`ChunkManager.configure_for_9_chunks` (Chebyshev square ring → exactly 9).
+Terrain3D addon v1.0.0 (Godot 4.3 build) installed at `addons/terrain_3d/`
+(minimal: gdextension + linux/windows binaries + editor scripts; NOT enabled
+as an editor plugin, and intentionally WITHOUT the 200+ demo EXR assets — the
+full Terrain3D release zip overwrites `project.godot` with its demo config, so
+extract only `addons/terrain_3d/`). Next: full art/audio pass (external asset
+generation), campaigns, true lockstep multiplayer sim, instanced rendering/LOD,
+balance playtesting.
 - Art/audio hand-off prompt for an external asset agent (Manus) is at
   `docs/MANUS_ASSETS_PROMPT.md` — every path it lists is already referenced by
   the game's runtime loaders (icons, sprites, terrain textures, UI, SFX,

@@ -11,6 +11,12 @@ class_name ChunkManager
 
 var chunk_size: float
 var view_radius: float
+# When true, the desired set is a square (Chebyshev) ring of `ring_radius`
+# chunks around the focus instead of a Euclidean disc. Used for the mega-map
+# "9 chunks around camera" streaming profile, which a distance disc cannot
+# express exactly for an arbitrary focus position.
+var use_square_ring: bool = false
+var ring_radius: int = 1
 # Currently active chunk keys (Vector2i) -> true.
 var _active: Dictionary = {}
 
@@ -31,8 +37,14 @@ static func chunk_key_of(pos: Vector3, chunk_size: float) -> Vector2i:
 ## The set of chunk keys that should be active around `focus`.
 func desired_chunks(focus: Vector3) -> Array:
 	var out: Array = []
-	var r := int(ceil(view_radius / chunk_size))
 	var ck := chunk_key_of(focus, chunk_size)
+	if use_square_ring:
+		var r: int = ring_radius
+		for dx in range(-r, r + 1):
+			for dz in range(-r, r + 1):
+				out.append(Vector2i(ck.x + dx, ck.y + dz))
+		return out
+	var r := int(ceil(view_radius / chunk_size))
 	var r2: float = view_radius * view_radius
 	# Test chunk centers within the radius.
 	for dx in range(-r, r + 1):
@@ -70,3 +82,24 @@ func active_count() -> int:
 
 func is_active(key: Vector2i) -> bool:
 	return _active.has(key)
+
+
+## Configure the streaming window so exactly a 3x3 block of chunks (9 chunks)
+## loads around the camera/focus — the mega-map streaming profile from the
+## design artifact. Uses a square (Chebyshev) ring so the count is exactly 9
+## regardless of where the focus sits inside its chunk. Returns self for chaining.
+static func configure_for_9_chunks(p_chunk_size: float = 256.0) -> ChunkManager:
+	var cm := ChunkManager.new(p_chunk_size, p_chunk_size * 1.5)
+	cm.use_square_ring = true
+	cm.ring_radius = 1
+	return cm
+
+
+## Convenience: the desired chunk set around `focus` when configured for 9 chunks.
+func chunks_around(focus: Vector3) -> Array:
+	var ck := chunk_key_of(focus, chunk_size)
+	var out: Array = []
+	for dx in range(-1, 2):
+		for dz in range(-1, 2):
+			out.append(Vector2i(ck.x + dx, ck.y + dz))
+	return out
