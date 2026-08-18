@@ -35,7 +35,8 @@ func build(extent: Vector2, is_contested: bool, seed_value: int) -> void:
 	_build_tree_multimesh(extent)
 	_build_park_islands(extent)
 	_build_parked_cars(extent)
-	_build_kaykit_street_props()
+	if seed_value == 0:
+		_build_kaykit_street_props()
 	if is_contested:
 		_build_barricades()
 
