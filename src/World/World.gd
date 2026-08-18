@@ -22,7 +22,7 @@ var spatial_grid: SpatialGrid = SpatialGrid.new(16.0)
 
 func _ready() -> void:
 	if not map_data:
-		map_data = TerrainGenerator.new().generate()
+		map_data = TerrainGenerator.new().generate(512, 4.0)
 	_build_terrain()
 	_build_features()
 	if units_root:
@@ -39,6 +39,11 @@ func _build_terrain() -> void:
 	else:
 		terrain = Terrain.new()
 	add_child(terrain)
+	# Stream the continuous world around the active battlefield. The map data
+	# remains full-size while only nearby terrain chunks are rendered.
+	terrain.streaming = true
+	terrain.chunk_size = 128.0
+	terrain.stream_view_radius = 512.0
 	terrain.set_map_data(map_data)
 
 
