@@ -47,8 +47,9 @@ func _build_features() -> void:
 		return
 	for c in features_root.get_children():
 		c.queue_free()
-	var cbd_scene: PackedScene = load("res://scenes/districts/CBD_Glass_District.tscn")
-	for city in map_data.cities:
+	var city_script = load("res://src/World/PhotorealCityGenerator.gd")
+	for city_index in range(map_data.cities.size()):
+		var city = map_data.cities[city_index]
 		var node: City = null
 		if city_scene:
 			node = city_scene.instantiate() as City
@@ -61,11 +62,14 @@ func _build_features() -> void:
 		node.city_name = city["name"]
 		if node.body_mesh:
 			node.body_mesh.visible = false
-		if cbd_scene:
-			var real_city: Node3D = cbd_scene.instantiate()
-			real_city.name = "MetaRealCBD_" + str(city["name"])
+		if city_script:
+			var real_city: Node3D = city_script.new()
+			real_city.name = "PhotorealCity_" + str(city["name"])
 			features_root.add_child(real_city)
 			real_city.global_position = pos
+			var contested: bool = bool(city.get("contested", false)) or city_index % 7 == 0
+			if real_city.has_method("build_city"):
+				real_city.build_city(str(city["name"]), city_index, contested)
 
 	for z in map_data.zones:
 		var node: StrategicZone = null

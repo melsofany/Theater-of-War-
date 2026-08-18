@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[sub_resource type="Shader" id="Shader_window_grid"]
+code = "shader_type spatial;\nrender_mode cull_back, diffuse_burley, specular_schlick_ggx;\nuniform vec4 glass_tint : source_color = vec4(0.045, 0.10, 0.17, 1.0);\nuniform vec4 window_light : source_color = vec4(0.18, 0.42, 0.58, 1.0);\nuniform float horizontal_count = 32.0;\nuniform float vertical_count = 8.0;\nvoid fragment() {\n    vec2 grid = UV * vec2(vertical_count, horizontal_count);\n    vec2 cell = fract(grid);\n    float frame = step(cell.x, 0.075) + step(1.0 - cell.x, 0.075) + step(cell.y, 0.045) + step(1.0 - cell.y, 0.045);\n    float lit = step(0.72, fract(sin(dot(floor(grid), vec2(12.9898, 78.233))) * 43758.5453));\n    ALBEDO = mix(glass_tint.rgb, window_light.rgb * (0.65 + lit * 0.45), clamp(frame, 0.0, 1.0));\n    METALLIC = 0.78;\n    ROUGHNESS = mix(0.18, 0.28, clamp(frame, 0.0, 1.0));\n    SPECULAR = 0.85;\n}\n"
+
+[resource]
+shader = SubResource("Shader_window_grid")
+resource_name = "WindowGrid_Procedural"

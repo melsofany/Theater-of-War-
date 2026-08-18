@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+albedo_color = Color(0.24, 0.27, 0.30, 1)
+metallic = 0.08
+roughness = 0.72
+specular_mode = 1
+resource_name = "UrbanConcrete_CC0"

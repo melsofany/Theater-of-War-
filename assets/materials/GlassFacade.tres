@@ -1,0 +1,21 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+albedo_color = Color(0.039, 0.071, 0.106, 1)
+metallic = 0.85
+roughness = 0.15
+specular_mode = 2
+clearcoat_enabled = true
+clearcoat = 0.8
+clearcoat_roughness = 0.08
+cull_mode = 0
+shading_mode = 1
+emission_enabled = true
+emission = Color(0.012, 0.028, 0.05, 1)
+emission_energy_multiplier = 0.18
+resource_name = "GlassFacade_CC0Compatible"
+
+; The referenced Poly Haven glass_facade asset was not available through its public API
+; during this run. The material remains texture-free and uses only Godot properties.
+; A normal map can be added later without changing the city generator.
+

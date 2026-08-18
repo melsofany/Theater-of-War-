@@ -83,3 +83,5 @@ command={
 [rendering]
 
 anti_aliasing/quality/msaa_3d=1
+rendering/lights_and_shadows/shadow_atlas/size=4096
+rendering/lights_and_shadows/directional_shadow/size=4096
