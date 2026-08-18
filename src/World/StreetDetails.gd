@@ -23,7 +23,10 @@ var _asphalt_material: Material
 
 func build(extent: Vector2, is_contested: bool, seed_value: int) -> void:
 	_rng.seed = abs(seed_value * 977 + 41)
-	_load_kaykit_assets()
+	# The reference-quality prop pass is reserved for the showcased Cairo district.
+	# Other streamed cities retain the lightweight procedural street layer.
+	if seed_value == 0:
+		_load_kaykit_assets()
 	_asphalt_material = _load_asphalt_material()
 	_build_city_base(extent)
 	_build_urban_block_ground(extent)
