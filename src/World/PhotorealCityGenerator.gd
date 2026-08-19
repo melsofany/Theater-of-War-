@@ -26,6 +26,10 @@ const KAYKIT_LOWRISE_PATHS: Array[String] = [
 ]
 
 var _kenney_detail_scene: Node3D = null
+var _kenney_tower_scenes: Array[Node3D] = []
+var _kenney_window_middle_scene: Node3D = null
+var _kenney_window_top_scene: Node3D = null
+var _kenney_roof_detail_scene: Node3D = null
 var _kaykit_lowrise_scenes: Array[Node3D] = []
 var _kenney_lowrise_scenes: Array[Node3D] = []
 var _kenney_load_attempted := false
@@ -93,6 +97,9 @@ func _build_district_blocks() -> void:
 			var index := row * width + col
 			var center := Vector3(x_values[col], 0.0, z_values[row])
 			var style := index % 10
+			# Keep the camera-facing edge low-rise so the boulevard and central towers remain visible.
+			if showcase_density and row == z_values.size() - 1:
+				style = 10
 			_build_building(center, _building_profile(style), style)
 
 func _building_profile(style: int) -> Vector3:
@@ -117,6 +124,8 @@ func _building_profile(style: int) -> Vector3:
 			return Vector3(54.0, 36.0, 34.0)
 		9:
 			return Vector3(30.0, 54.0, 44.0)
+		10:
+			return Vector3(28.0, 12.0, 24.0)
 		_:
 			return Vector3(36.0, 40.0, 32.0)
 
@@ -137,23 +146,26 @@ func _build_building(center: Vector3, size: Vector3, style: int) -> void:
 
 	var facade_material := _facade_variant(style)
 	var y_center := podium_height + size.y * 0.5
-	if style == 2 or style == 8:
-		_add_rounded_tower_mass(root, size, podium_height, facade_material, style)
-	elif style == 5 or style == 9:
-		_add_split_tower_mass(root, size, podium_height, facade_material, style)
+	var use_kenney_hero := showcase_density and (style == 0 or style == 5 or style == 7) and _kenney_window_middle_scene != null
+	if use_kenney_hero:
+		_add_kenney_hero_tower(root, size, podium_height, style)
 	else:
-		_add_rectangular_tower_mass(root, size, podium_height, facade_material)
-
-	_add_corner_fins(root, size, y_center)
-	_add_facade_spines(root, size, podium_height, facade_material)
-	_add_facade_modules(root, size, podium_height)
-	_add_floor_bands(root, size, podium_height)
-	if size.y > 38.0:
-		_add_top_setback(root, size, podium_height, facade_material)
-	if style == 1 or style == 2 or style == 5:
-		_add_balcony_bands(root, size, podium_height)
-	if style == 0 or style == 5 or style == 7:
-		_add_kenney_detail(root, size)
+		if style == 2 or style == 8:
+			_add_rounded_tower_mass(root, size, podium_height, facade_material, style)
+		elif style == 5 or style == 9:
+			_add_split_tower_mass(root, size, podium_height, facade_material, style)
+		else:
+			_add_rectangular_tower_mass(root, size, podium_height, facade_material)
+		_add_corner_fins(root, size, y_center)
+		_add_facade_spines(root, size, podium_height, facade_material)
+		_add_facade_modules(root, size, podium_height)
+		_add_floor_bands(root, size, podium_height)
+		if size.y > 38.0:
+			_add_top_setback(root, size, podium_height, facade_material)
+		if style == 1 or style == 2 or style == 5:
+			_add_balcony_bands(root, size, podium_height)
+		if style == 0 or style == 5 or style == 7:
+			_add_kenney_detail(root, size)
 	if style == 2 or style == 8:
 		_add_rounded_podium(root, size, podium_height)
 	_add_lowrise_annexes(root, size, podium_height)
@@ -302,7 +314,7 @@ func _add_showcase_commercial_facade(root: Node3D, size: Vector3, podium_height:
 		root.add_child(shrub)
 
 func _add_lowrise_annexes(root: Node3D, size: Vector3, podium_height: float) -> void:
-	if size.y < 28.0:
+	if size.y < 28.0 and not showcase_density:
 		return
 	var annex_height := 11.0 if size.y > 55.0 else 8.5
 	for side in [-1.0, 1.0]:
@@ -526,6 +538,18 @@ func _load_kenney_detail() -> void:
 			var low_scene := low_document.generate_scene(low_state)
 			if low_scene is Node3D:
 				_kenney_lowrise_scenes.append(low_scene)
+	for tower_path in [
+		"res://assets/cc0/kenney_modular_buildings/building-sample-tower-a.glb",
+		"res://assets/cc0/kenney_modular_buildings/building-sample-tower-b.glb",
+		"res://assets/cc0/kenney_modular_buildings/building-sample-tower-c.glb",
+		"res://assets/cc0/kenney_modular_buildings/building-sample-tower-d.glb"
+	]:
+		var tower_scene := _load_kenney_scene(tower_path)
+		if tower_scene != null:
+			_kenney_tower_scenes.append(tower_scene)
+	_kenney_window_middle_scene = _load_kenney_scene("res://assets/cc0/kenney_modular_buildings/building-windows-high-middle.glb")
+	_kenney_window_top_scene = _load_kenney_scene("res://assets/cc0/kenney_modular_buildings/building-windows-high-top-square.glb")
+	_kenney_roof_detail_scene = _load_kenney_scene("res://assets/cc0/kenney_modular_buildings/roof-flat-detail-b.glb")
 	for path in KAYKIT_LOWRISE_PATHS:
 		var kay_document := GLTFDocument.new()
 		var kay_state := GLTFState.new()
@@ -533,6 +557,50 @@ func _load_kenney_detail() -> void:
 			var kay_scene := kay_document.generate_scene(kay_state)
 			if kay_scene is Node3D:
 				_kaykit_lowrise_scenes.append(kay_scene)
+
+func _load_kenney_scene(path: String) -> Node3D:
+	var document := GLTFDocument.new()
+	var state := GLTFState.new()
+	if document.append_from_file(path, state) != OK:
+		return null
+	var scene := document.generate_scene(state)
+	return scene as Node3D
+
+func _add_kenney_hero_tower(root: Node3D, size: Vector3, podium_height: float, style: int) -> void:
+	# Use a complete CC0 modular tower where the camera sees the building front.
+	# These models contain actual window/roof geometry and give the hero skyline
+	# a silhouette that cannot be achieved by a single BoxMesh plus a shader.
+	if not _kenney_tower_scenes.is_empty():
+		var tower_index := 0 if style == 0 else (1 if style == 5 else 2)
+		tower_index = tower_index % _kenney_tower_scenes.size()
+		var tower: Node3D = _kenney_tower_scenes[tower_index].duplicate()
+		tower.name = "Kenney_CC0_HeroTower_%02d" % tower_index
+		var source_heights := [2.5, 1.8875, 3.1375, 3.7625]
+		var source_height: float = source_heights[tower_index]
+		var horizontal_scale := minf(size.x / 1.10, size.z / 1.20) * 0.92
+		var vertical_scale := size.y / source_height * 0.88
+		var tower_scale := minf(horizontal_scale, vertical_scale)
+		tower.scale = Vector3.ONE * tower_scale
+		tower.position = Vector3(-size.x * 0.04 if style == 5 else 0.0, podium_height, 0.0)
+		root.add_child(tower)
+		var crown := _mesh_box(Vector3(size.x * 0.74, 0.38, size.z * 0.74), CONCRETE_MATERIAL)
+		crown.position = tower.position + Vector3(0.0, source_height * tower_scale + 0.28, 0.0)
+		root.add_child(crown)
+		return
+	# Fallback retained for projects where the GLB importer is unavailable.
+	var module_scale := minf(size.x, size.z) * (0.72 if style == 0 else 0.78)
+	var module_height := 0.625 * module_scale
+	var level_count := clampi(roundi(size.y / module_height), 3, 6)
+	var actual_height := module_height * float(level_count)
+	for level in range(level_count):
+		var module: Node3D = _kenney_window_middle_scene.duplicate()
+		module.name = "Kenney_Hero_WindowModule_%02d" % level
+		module.scale = Vector3.ONE * module_scale
+		module.position = Vector3(0.0, podium_height + float(level) * module_height, 0.0)
+		root.add_child(module)
+	var core := _mesh_box(Vector3(size.x * 0.58, maxf(actual_height - 1.0, 4.0), size.z * 0.58), CONCRETE_MATERIAL)
+	core.position = Vector3(0.0, podium_height + maxf(actual_height - 1.0, 4.0) * 0.5, 0.0)
+	root.add_child(core)
 
 func _add_kenney_detail(root: Node3D, size: Vector3) -> void:
 	if _kenney_detail_scene == null:

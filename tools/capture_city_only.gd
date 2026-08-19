@@ -19,9 +19,9 @@ func _initialize() -> void:
 	environment.sky = sky
 	environment.background_energy_multiplier = 1.12
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color(0.62, 0.72, 0.84)
-	environment.ambient_light_energy = 0.62
-	environment.tonemap_exposure = 1.08
+	environment.ambient_light_color = Color(0.48, 0.56, 0.62)
+	environment.ambient_light_energy = 0.42
+	environment.tonemap_exposure = 1.02
 	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	environment.glow_enabled = true
 	environment.glow_intensity = 0.10
@@ -37,7 +37,8 @@ func _initialize() -> void:
 
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-48.0, -32.0, 0.0)
-	sun.light_energy = 1.82
+	sun.light_energy = 1.55
+	sun.light_color = Color(1.0, 0.92, 0.78)
 	sun.shadow_enabled = true
 	root.add_child(sun)
 
@@ -53,10 +54,10 @@ func _initialize() -> void:
 	# behind the front row and make the capture appear unchanged.
 	camera = Camera3D.new()
 	camera.current = true
-	camera.fov = 52.0
+	camera.fov = 48.0
 	root.add_child(camera)
-	camera.position = Vector3(0.0, 104.0, 350.0)
-	camera.look_at_from_position(camera.position, Vector3(0.0, 18.0, 138.0), Vector3.UP)
+	camera.position = Vector3(0.0, 84.0, 302.0)
+	camera.look_at_from_position(camera.position, Vector3(0.0, 24.0, 112.0), Vector3.UP)
 	call_deferred("_capture")
 
 func _capture() -> void:

@@ -113,6 +113,14 @@ func _build_roads(extent: Vector2) -> void:
 		_add_x_corridor(extent.x, z, 18.0)
 	for x in primary_positions:
 		_add_z_corridor(extent.y, x, 18.0)
+	if _kaykit_load_attempted:
+		# Fill the five-by-five Showcase grid with secondary streets between every block.
+		# This removes the large empty plazas and matches the continuous road texture of the reference.
+		var secondary_positions: Array[float] = [-112.5, -37.5, 37.5, 112.5]
+		for z in secondary_positions:
+			_add_x_corridor(extent.x, z, 11.0)
+		for x in secondary_positions:
+			_add_z_corridor(extent.y, x, 11.0)
 
 func _add_x_corridor(length: float, z: float, width: float) -> void:
 	var road := _box(Vector3(length, 0.20, width), _asphalt_material)
