@@ -64,6 +64,9 @@ func _build_showcase_background_city() -> void:
 		Vector3(-236.0, 0.0, -42.0), Vector3(-232.0, 0.0, -116.0)
 	]
 	for i in range(background_positions.size()):
+		# The camera approaches from positive Z; do not place "background" blocks in its foreground.
+		if showcase_density and background_positions[i].z > 120.0:
+			continue
 		var height := 18.0 + float((i * 17) % 38)
 		var width := 22.0 + float((i * 11) % 22)
 		var depth := 20.0 + float((i * 7) % 18)
@@ -94,12 +97,16 @@ func _build_district_blocks() -> void:
 	var width := x_values.size()
 	for row in range(min(building_rows + (1 if showcase_density else 0), z_values.size())):
 		for col in range(min(building_columns + (1 if showcase_density else 0), x_values.size())):
+			if showcase_density and row == z_values.size() - 1:
+				# Leave the camera-facing edge open: the boulevard is the foreground hero element.
+				# A full row of podiums created large blank slabs that hid the urban street layer.
+				continue
+			if showcase_density and col == 2 and row >= 1:
+				# Keep a continuous central boulevard sightline through the near and middle rows.
+				continue
 			var index := row * width + col
 			var center := Vector3(x_values[col], 0.0, z_values[row])
 			var style := index % 10
-			# Keep the camera-facing edge low-rise so the boulevard and central towers remain visible.
-			if showcase_density and row == z_values.size() - 1:
-				style = 10
 			_build_building(center, _building_profile(style), style)
 
 func _building_profile(style: int) -> Vector3:
@@ -125,7 +132,7 @@ func _building_profile(style: int) -> Vector3:
 		9:
 			return Vector3(30.0, 54.0, 44.0)
 		10:
-			return Vector3(28.0, 12.0, 24.0)
+			return Vector3(18.0, 8.0, 16.0)
 		_:
 			return Vector3(36.0, 40.0, 32.0)
 
@@ -146,7 +153,7 @@ func _build_building(center: Vector3, size: Vector3, style: int) -> void:
 
 	var facade_material := _facade_variant(style)
 	var y_center := podium_height + size.y * 0.5
-	var use_kenney_hero := showcase_density and (style == 0 or style == 5 or style == 7) and _kenney_window_middle_scene != null
+	var use_kenney_hero := showcase_density and (style == 0 or style == 2 or style == 5 or style == 7 or style == 9) and _kenney_window_middle_scene != null
 	if use_kenney_hero:
 		_add_kenney_hero_tower(root, size, podium_height, style)
 	else:
@@ -169,7 +176,10 @@ func _build_building(center: Vector3, size: Vector3, style: int) -> void:
 	if style == 2 or style == 8:
 		_add_rounded_podium(root, size, podium_height)
 	_add_lowrise_annexes(root, size, podium_height)
-	_add_roof_garden(root, size, podium_height)
+	# Tall procedural roofs read as detached floating platforms at this camera distance.
+	# Keep planted terraces on low-rise podiums only; hero tower assets supply their own tops.
+	if size.y <= 36.0:
+		_add_roof_garden(root, size, podium_height)
 
 func _add_rectangular_tower_mass(root: Node3D, size: Vector3, podium_height: float, facade_material: Material) -> void:
 	var core := _mesh_box(Vector3(size.x * 0.76, size.y, size.z * 0.76), CONCRETE_MATERIAL)

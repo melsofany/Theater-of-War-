@@ -7,20 +7,20 @@ func _initialize() -> void:
 	var environment_node := WorldEnvironment.new()
 	var environment := Environment.new()
 	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color(0.18, 0.48, 0.84)
-	sky_material.sky_horizon_color = Color(0.72, 0.88, 1.0)
-	sky_material.ground_bottom_color = Color(0.30, 0.38, 0.46)
-	sky_material.ground_horizon_color = Color(0.58, 0.72, 0.84)
+	sky_material.sky_top_color = Color(0.22, 0.34, 0.44)
+	sky_material.sky_horizon_color = Color(0.74, 0.76, 0.74)
+	sky_material.ground_bottom_color = Color(0.20, 0.22, 0.23)
+	sky_material.ground_horizon_color = Color(0.43, 0.45, 0.44)
 	sky_material.sun_angle_max = 18.0
 	sky_material.sun_curve = 0.08
 	var sky := Sky.new()
 	sky.sky_material = sky_material
 	environment.background_mode = Environment.BG_SKY
 	environment.sky = sky
-	environment.background_energy_multiplier = 1.12
+	environment.background_energy_multiplier = 0.96
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color(0.48, 0.56, 0.62)
-	environment.ambient_light_energy = 0.42
+	environment.ambient_light_color = Color(0.55, 0.53, 0.48)
+	environment.ambient_light_energy = 0.32
 	environment.tonemap_exposure = 1.02
 	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	environment.glow_enabled = true
@@ -37,14 +37,14 @@ func _initialize() -> void:
 
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-48.0, -32.0, 0.0)
-	sun.light_energy = 1.55
+	sun.light_energy = 1.28
 	sun.light_color = Color(1.0, 0.92, 0.78)
 	sun.shadow_enabled = true
 	root.add_child(sun)
 
 	city = load("res://src/World/PhotorealCityGenerator.gd").new()
 	city.name = "ReferenceCityOnly"
-	city.city_extent = Vector2(360.0, 360.0)
+	city.city_extent = Vector2(520.0, 520.0)
 	city.showcase_density = true
 	root.add_child(city)
 	city.build_city("Cairo War", 0, false)
@@ -54,10 +54,10 @@ func _initialize() -> void:
 	# behind the front row and make the capture appear unchanged.
 	camera = Camera3D.new()
 	camera.current = true
-	camera.fov = 48.0
+	camera.fov = 52.0
 	root.add_child(camera)
-	camera.position = Vector3(0.0, 84.0, 302.0)
-	camera.look_at_from_position(camera.position, Vector3(0.0, 24.0, 112.0), Vector3.UP)
+	camera.position = Vector3(0.0, 52.0, 300.0)
+	camera.look_at_from_position(camera.position, Vector3(0.0, 23.0, 118.0), Vector3.UP)
 	call_deferred("_capture")
 
 func _capture() -> void:
