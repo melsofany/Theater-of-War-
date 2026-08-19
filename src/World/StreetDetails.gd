@@ -37,6 +37,7 @@ func build(extent: Vector2, is_contested: bool, seed_value: int) -> void:
 	_build_parked_cars(extent)
 	if seed_value == 0:
 		_build_kaykit_street_props()
+		_build_showcase_boulevard()
 	if is_contested:
 		_build_barricades()
 
@@ -93,6 +94,10 @@ func _build_urban_block_ground(extent: Vector2) -> void:
 	# Paved urban blocks fill the space between the road corridors. This prevents
 	# the city from floating on a rural green/gray plane in the strategic view.
 	var centers := [-150.0, -60.0, 60.0, 150.0]
+	if _kaykit_load_attempted:
+		# Showcase uses a five-by-five tower grid; extend the paved urban blocks
+		# so the outer row does not float over the base slab.
+		centers = [-150.0, -75.0, 0.0, 75.0, 150.0]
 	for z in centers:
 		for x in centers:
 			var block := _box(Vector3(52.0, 0.16, 52.0), CONCRETE_MATERIAL)
@@ -258,12 +263,71 @@ func _build_parked_cars(extent: Vector2) -> void:
 		roof.position = car.position + Vector3(0, 0.58, 0)
 		add_child(roof)
 
+func _build_showcase_boulevard() -> void:
+	# A foreground boulevard creates the readable architectural composition used by the reference.
+	# It is only built for the Cairo showcase to keep the streamed RTS world lightweight.
+	var boulevard_z := 216.0
+	var road := _box(Vector3(340.0, 0.24, 30.0), _asphalt_material)
+	road.position = Vector3(0.0, 0.47, boulevard_z)
+	add_child(road)
+	var median := _box(Vector3(340.0, 0.18, 3.2), FOLIAGE_MATERIAL)
+	median.position = Vector3(0.0, 0.68, boulevard_z)
+	add_child(median)
+	for side in [-1.0, 1.0]:
+		var sidewalk := _box(Vector3(340.0, 0.22, 4.6), CONCRETE_MATERIAL)
+		sidewalk.position = Vector3(0.0, 0.73, boulevard_z + side * 18.0)
+		add_child(sidewalk)
+		for x in range(-156, 157, 24):
+			var planter := _box(Vector3(7.0, 0.18, 3.0), FOLIAGE_MATERIAL)
+			planter.position = Vector3(float(x), 0.88, boulevard_z + side * 18.0)
+			add_child(planter)
+			var trunk := _box(Vector3(0.22, 3.0, 0.22), CONCRETE_MATERIAL)
+			trunk.position = Vector3(float(x), 2.35, boulevard_z + side * 18.0)
+			add_child(trunk)
+			var crown := SphereMesh.new()
+			crown.radius = 2.25
+			crown.height = 4.2
+			crown.radial_segments = 16
+			crown.rings = 8
+			var tree := MeshInstance3D.new()
+			tree.mesh = crown
+			tree.material_override = FOLIAGE_MATERIAL
+			tree.position = Vector3(float(x), 5.05, boulevard_z + side * 18.0)
+			add_child(tree)
+	for x in range(-144, 145, 24):
+		var dash := _box(Vector3(9.0, 0.055, 0.20), MARKING_MATERIAL)
+		dash.position = Vector3(float(x), 0.73, boulevard_z - 7.0)
+		add_child(dash)
+		dash = _box(Vector3(9.0, 0.055, 0.20), MARKING_MATERIAL)
+		dash.position = Vector3(float(x), 0.73, boulevard_z + 7.0)
+		add_child(dash)
+	for offset in [-7.5, -2.5, 2.5, 7.5]:
+		var stripe := _box(Vector3(1.5, 0.06, 22.0), MARKING_MATERIAL)
+		stripe.position = Vector3(float(offset), 0.76, boulevard_z - 15.0)
+		add_child(stripe)
+	if not _kaykit_car_scenes.is_empty():
+		for i in range(8):
+			var car: Node3D = _kaykit_car_scenes[i % _kaykit_car_scenes.size()].duplicate()
+			car.name = "Showcase_Boulevard_Car_%02d" % i
+			car.scale = Vector3.ONE * 6.0
+			car.position = Vector3(-132.0 + float(i) * 36.0, 0.82, boulevard_z + (-7.0 if i % 2 == 0 else 7.0))
+			car.rotation.y = 0.0 if i % 2 == 0 else PI
+			add_child(car)
+	if _kaykit_streetlight_scene != null:
+		for i in range(8):
+			var light: Node3D = _kaykit_streetlight_scene.duplicate()
+			light.name = "Showcase_Boulevard_Light_%02d" % i
+			light.scale = Vector3.ONE * 6.0
+			light.position = Vector3(-140.0 + float(i) * 40.0, 0.60, boulevard_z - 19.0)
+			light.rotation.y = PI
+			add_child(light)
+
 func _build_kaykit_street_props() -> void:
 	var car_positions: Array[Vector3] = [
-		Vector3(-150.0, 0.82, -111.0), Vector3(-120.0, 0.82, -111.0),
-		Vector3(-90.0, 0.82, -111.0), Vector3(90.0, 0.82, 111.0),
-		Vector3(120.0, 0.82, 111.0), Vector3(150.0, 0.82, 111.0),
-		Vector3(-111.0, 0.82, -150.0), Vector3(111.0, 0.82, 150.0)
+		Vector3(-150.0, 0.82, -111.0), Vector3(-120.0, 0.82, -111.0), Vector3(-90.0, 0.82, -111.0), Vector3(-60.0, 0.82, -111.0),
+		Vector3(60.0, 0.82, 111.0), Vector3(90.0, 0.82, 111.0), Vector3(120.0, 0.82, 111.0), Vector3(150.0, 0.82, 111.0),
+		Vector3(-111.0, 0.82, -150.0), Vector3(-111.0, 0.82, -120.0), Vector3(111.0, 0.82, 120.0), Vector3(111.0, 0.82, 150.0),
+		Vector3(-150.0, 0.82, 11.0), Vector3(-120.0, 0.82, 11.0), Vector3(120.0, 0.82, -11.0), Vector3(150.0, 0.82, -11.0)
 	]
 	for i in range(car_positions.size()):
 		var car: Node3D = _kaykit_car_scenes[i % _kaykit_car_scenes.size()].duplicate()
@@ -274,10 +338,10 @@ func _build_kaykit_street_props() -> void:
 		add_child(car)
 
 	var light_positions: Array[Vector3] = [
-		Vector3(-132.0, 0.60, -12.0), Vector3(-132.0, 0.60, 108.0),
-		Vector3(132.0, 0.60, -108.0), Vector3(132.0, 0.60, 12.0),
-		Vector3(-12.0, 0.60, -132.0), Vector3(108.0, 0.60, -132.0),
-		Vector3(-108.0, 0.60, 132.0), Vector3(12.0, 0.60, 132.0)
+		Vector3(-132.0, 0.60, -72.0), Vector3(-132.0, 0.60, -12.0), Vector3(-132.0, 0.60, 48.0), Vector3(-132.0, 0.60, 108.0),
+		Vector3(132.0, 0.60, -108.0), Vector3(132.0, 0.60, -48.0), Vector3(132.0, 0.60, 12.0), Vector3(132.0, 0.60, 72.0),
+		Vector3(-72.0, 0.60, -132.0), Vector3(-12.0, 0.60, -132.0), Vector3(48.0, 0.60, -132.0), Vector3(108.0, 0.60, -132.0),
+		Vector3(-108.0, 0.60, 132.0), Vector3(-48.0, 0.60, 132.0), Vector3(12.0, 0.60, 132.0), Vector3(72.0, 0.60, 132.0)
 	]
 	for i in range(light_positions.size()):
 		if _kaykit_streetlight_scene == null:
@@ -290,8 +354,9 @@ func _build_kaykit_street_props() -> void:
 		add_child(light)
 
 	var bench_positions: Array[Vector3] = [
-		Vector3(-70.0, 0.52, -70.0), Vector3(70.0, 0.52, 70.0),
-		Vector3(-70.0, 0.52, 70.0), Vector3(70.0, 0.52, -70.0)
+		Vector3(-78.0, 0.52, -78.0), Vector3(78.0, 0.52, 78.0),
+		Vector3(-78.0, 0.52, 78.0), Vector3(78.0, 0.52, -78.0),
+		Vector3(-68.0, 0.52, -78.0), Vector3(68.0, 0.52, 78.0)
 	]
 	for i in range(bench_positions.size()):
 		if _kaykit_bench_scene == null:

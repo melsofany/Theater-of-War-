@@ -7,19 +7,21 @@ func _initialize() -> void:
 	var environment_node := WorldEnvironment.new()
 	var environment := Environment.new()
 	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color(0.34, 0.62, 0.96)
-	sky_material.sky_horizon_color = Color(0.82, 0.92, 1.00)
-	sky_material.ground_bottom_color = Color(0.48, 0.54, 0.58)
-	sky_material.ground_horizon_color = Color(0.78, 0.84, 0.90)
+	sky_material.sky_top_color = Color(0.18, 0.48, 0.84)
+	sky_material.sky_horizon_color = Color(0.72, 0.88, 1.0)
+	sky_material.ground_bottom_color = Color(0.30, 0.38, 0.46)
+	sky_material.ground_horizon_color = Color(0.58, 0.72, 0.84)
 	sky_material.sun_angle_max = 18.0
 	sky_material.sun_curve = 0.08
 	var sky := Sky.new()
 	sky.sky_material = sky_material
 	environment.background_mode = Environment.BG_SKY
 	environment.sky = sky
+	environment.background_energy_multiplier = 1.12
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color(0.70, 0.78, 0.88)
-	environment.ambient_light_energy = 1.05
+	environment.ambient_light_color = Color(0.62, 0.72, 0.84)
+	environment.ambient_light_energy = 0.62
+	environment.tonemap_exposure = 1.08
 	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	environment.glow_enabled = true
 	environment.glow_intensity = 0.10
@@ -35,7 +37,7 @@ func _initialize() -> void:
 
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-48.0, -32.0, 0.0)
-	sun.light_energy = 2.55
+	sun.light_energy = 1.82
 	sun.shadow_enabled = true
 	root.add_child(sun)
 
@@ -46,12 +48,15 @@ func _initialize() -> void:
 	root.add_child(city)
 	city.build_city("Cairo War", 0, false)
 
+	# PhotorealCityGenerator already owns the showcase StreetDetails layer.
+	# Do not add a second copy here: duplicate roads and props can hide the boulevard
+	# behind the front row and make the capture appear unchanged.
 	camera = Camera3D.new()
 	camera.current = true
-	camera.fov = 44.0
+	camera.fov = 52.0
 	root.add_child(camera)
-	camera.position = Vector3(158.0, 118.0, 158.0)
-	camera.look_at_from_position(camera.position, Vector3(28.0, 18.0, 28.0), Vector3.UP)
+	camera.position = Vector3(0.0, 104.0, 350.0)
+	camera.look_at_from_position(camera.position, Vector3(0.0, 18.0, 138.0), Vector3.UP)
 	call_deferred("_capture")
 
 func _capture() -> void:

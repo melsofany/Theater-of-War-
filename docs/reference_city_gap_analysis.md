@@ -39,3 +39,17 @@ The final daylight probe is brighter and more readable than the dark procedural-
 ## Facade contrast probe
 
 The darker facade palette loaded successfully but the rendered result changed only modestly under the current bright lighting and window-grid overlays. This confirms that the major remaining gap cannot be solved by albedo color alone; it requires authored facade meshes/textures with real silhouette and signage variation. I will stop speculative material tweaking here, run the stability checks, and preserve the validated composition/camera fix rather than claim a photorealistic result.
+
+## جولة Showcase التالية
+- إضافة فواصل طوابق وموليونات هندسية جعلت الواجهات مقروءة أكثر، لكن المشهد ما زال stylized بسبب بساطة نماذج المباني والخامات.
+- خفض الكاميرا إلى `Vector3(178,58,178)` مع هدف `Vector3(18,32,18)` أظهر الواجهات أكثر، لكنه لا يزال لا يُظهر شبكة الشوارع العريضة كما في المرجع؛ الطبقة القريبة تهيمن عليها الأسطح والكتل.
+- الاستنتاج: التحسين التالي الأعلى أثرًا هو بناء محور شارع/حديقة مركزي واضح في مجال الكاميرا، مع تقليل مساحات الأسطح الفارغة، وليس زيادة الأبراج فقط.
+
+
+## جولة البوليفارد والكاميرا المركزية — 2026-08-19
+- أُزيل إنشاء `StreetDetails` المكرر من `tools/capture_city_only.gd`؛ مولد المدينة يبني طبقة الشوارع مرة واحدة، ما يمنع تراكب الطرق والدعاية والسيارات.
+- نُقلت جادة Showcase إلى `z=216` لتصبح أمام صف الأبراج بدل تراكبها بصريًا مع مباني `z=150`.
+- أُضيف امتداد أرضي 5×5 لكتل الحي عند تحميل أصول KayKit، حتى لا تطفو صفوف الكثافة الجديدة فوق أرض غير مكتملة.
+- أفضل لقطة تحقق حالية تستخدم كاميرا مركزية عند `Vector3(0,104,350)` وهدف `Vector3(0,18,138)` و`fov=52`; وهي تُظهر شبكة الطرق، الأرصفة، الأشجار، السيارات، الواجهات التجارية، الأبراج، والحدائق السطحية معًا.
+- خُفّضت إضاءة خامة `GlassFacade` الذاتية وزيدت metallic/clearcoat، لكن الفجوة الجوهرية باقية: المشهد ما زال stylized/low-poly وليس فوتورياليًا مثل الصورة المرجعية، لأن معظم الواجهات إجرائية ولا تستخدم خرائط PBR أو نماذج عالية التفاصيل.
+- تحذيرات التقاط Godot الحالية تخص ALSA في البيئة وتسريبات RID عند الخروج، ولا توجد `SCRIPT ERROR` أو أخطاء تمنع حفظ الصورة.

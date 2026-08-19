@@ -44,6 +44,41 @@ func build_city(city_name: String, city_index: int, is_contested: bool = false) 
 	add_child(street_details)
 	street_details.build(city_extent, contested, _city_index)
 	_build_district_blocks()
+	if showcase_density:
+		_build_showcase_background_city()
+
+func _build_showcase_background_city() -> void:
+	# A restrained ring of distant blocks gives the hero district a believable city horizon.
+	# They remain deliberately simple so the RTS view does not pay the hero-asset cost everywhere.
+	var background_positions := [
+		Vector3(-228.0, 0.0, -188.0), Vector3(-160.0, 0.0, -222.0), Vector3(-84.0, 0.0, -232.0),
+		Vector3(12.0, 0.0, -230.0), Vector3(104.0, 0.0, -226.0), Vector3(188.0, 0.0, -205.0),
+		Vector3(228.0, 0.0, -146.0), Vector3(238.0, 0.0, -70.0), Vector3(236.0, 0.0, 18.0),
+		Vector3(232.0, 0.0, 102.0), Vector3(214.0, 0.0, 180.0), Vector3(154.0, 0.0, 226.0),
+		Vector3(72.0, 0.0, 232.0), Vector3(-18.0, 0.0, 230.0), Vector3(-108.0, 0.0, 228.0),
+		Vector3(-194.0, 0.0, 208.0), Vector3(-232.0, 0.0, 132.0), Vector3(-238.0, 0.0, 48.0),
+		Vector3(-236.0, 0.0, -42.0), Vector3(-232.0, 0.0, -116.0)
+	]
+	for i in range(background_positions.size()):
+		var height := 18.0 + float((i * 17) % 38)
+		var width := 22.0 + float((i * 11) % 22)
+		var depth := 20.0 + float((i * 7) % 18)
+		var root := Node3D.new()
+		root.name = "Showcase_BackgroundBlock_%02d" % i
+		root.position = background_positions[i]
+		add_child(root)
+		var podium := _mesh_box(Vector3(width + 10.0, 6.0, depth + 10.0), CONCRETE_MATERIAL)
+		podium.position.y = 3.0
+		root.add_child(podium)
+		var body := _mesh_box(Vector3(width, height, depth), _facade_variant(i + 3))
+		body.position.y = 6.0 + height * 0.5
+		root.add_child(body)
+		var front := _mesh_box(Vector3(width * 0.82, height * 0.84, 0.12), WINDOW_MATERIAL)
+		front.position = Vector3(0.0, 6.0 + height * 0.5, -depth * 0.51)
+		root.add_child(front)
+		var roof := _mesh_box(Vector3(width + 1.4, 0.28, depth + 1.4), CONCRETE_MATERIAL)
+		roof.position.y = 6.0 + height + 0.18
+		root.add_child(roof)
 
 func _build_district_blocks() -> void:
 	# The showcase district uses a denser five-by-five urban fabric; streamed cities keep the lighter grid.
@@ -97,36 +132,21 @@ func _build_building(center: Vector3, size: Vector3, style: int) -> void:
 	root.add_child(podium)
 	_add_podium_glass(root, size, podium_height)
 	_add_shop_fronts(root, size, podium_height)
-
-	var core := _mesh_box(Vector3(size.x * 0.76, size.y, size.z * 0.76), CONCRETE_MATERIAL)
-	core.position.y = podium_height + size.y * 0.5
-	root.add_child(core)
+	if showcase_density and size.y <= 48.0:
+		_add_showcase_commercial_facade(root, size, podium_height, style)
 
 	var facade_material := _facade_variant(style)
 	var y_center := podium_height + size.y * 0.5
-	var normals := [Vector3(0, 0, -1), Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(1, 0, 0)]
-	var facade_offsets := [
-		Vector3(0, y_center, -size.z * 0.39),
-		Vector3(0, y_center, size.z * 0.39),
-		Vector3(-size.x * 0.39, y_center, 0),
-		Vector3(size.x * 0.39, y_center, 0)
-	]
-	var facade_sizes := [
-		Vector3(size.x * 0.82, size.y * 0.95, 0.18),
-		Vector3(size.x * 0.82, size.y * 0.95, 0.18),
-		Vector3(0.18, size.y * 0.95, size.z * 0.82),
-		Vector3(0.18, size.y * 0.95, size.z * 0.82)
-	]
-	for i in range(4):
-		var panel := _mesh_box(facade_sizes[i], facade_material)
-		panel.position = facade_offsets[i]
-		root.add_child(panel)
-		var grid := _mesh_box(facade_sizes[i] + Vector3(0.04, -1.1, 0.04), WINDOW_MATERIAL)
-		grid.position = facade_offsets[i] + normals[i] * 0.12
-		root.add_child(grid)
+	if style == 2 or style == 8:
+		_add_rounded_tower_mass(root, size, podium_height, facade_material, style)
+	elif style == 5 or style == 9:
+		_add_split_tower_mass(root, size, podium_height, facade_material, style)
+	else:
+		_add_rectangular_tower_mass(root, size, podium_height, facade_material)
 
 	_add_corner_fins(root, size, y_center)
 	_add_facade_spines(root, size, podium_height, facade_material)
+	_add_facade_modules(root, size, podium_height)
 	_add_floor_bands(root, size, podium_height)
 	if size.y > 38.0:
 		_add_top_setback(root, size, podium_height, facade_material)
@@ -138,6 +158,93 @@ func _build_building(center: Vector3, size: Vector3, style: int) -> void:
 		_add_rounded_podium(root, size, podium_height)
 	_add_lowrise_annexes(root, size, podium_height)
 	_add_roof_garden(root, size, podium_height)
+
+func _add_rectangular_tower_mass(root: Node3D, size: Vector3, podium_height: float, facade_material: Material) -> void:
+	var core := _mesh_box(Vector3(size.x * 0.76, size.y, size.z * 0.76), CONCRETE_MATERIAL)
+	core.position.y = podium_height + size.y * 0.5
+	root.add_child(core)
+	var y_center := podium_height + size.y * 0.5
+	var normals := [Vector3(0, 0, -1), Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(1, 0, 0)]
+	var facade_offsets := [
+		Vector3(0, y_center, -size.z * 0.39), Vector3(0, y_center, size.z * 0.39),
+		Vector3(-size.x * 0.39, y_center, 0), Vector3(size.x * 0.39, y_center, 0)
+	]
+	var facade_sizes := [
+		Vector3(size.x * 0.82, size.y * 0.95, 0.18), Vector3(size.x * 0.82, size.y * 0.95, 0.18),
+		Vector3(0.18, size.y * 0.95, size.z * 0.82), Vector3(0.18, size.y * 0.95, size.z * 0.82)
+	]
+	for i in range(4):
+		var panel := _mesh_box(facade_sizes[i], facade_material)
+		panel.position = facade_offsets[i]
+		root.add_child(panel)
+		var grid := _mesh_box(facade_sizes[i] + Vector3(0.04, -1.1, 0.04), WINDOW_MATERIAL)
+		grid.position = facade_offsets[i] + normals[i] * 0.12
+		root.add_child(grid)
+
+func _add_rounded_tower_mass(root: Node3D, size: Vector3, podium_height: float, facade_material: Material, style: int) -> void:
+	var tower_mesh := CylinderMesh.new()
+	tower_mesh.top_radius = 0.50
+	tower_mesh.bottom_radius = 0.56
+	tower_mesh.height = size.y
+	tower_mesh.radial_segments = 32
+	var tower := MeshInstance3D.new()
+	tower.mesh = tower_mesh
+	tower.material_override = facade_material
+	tower.scale = Vector3(size.x, 1.0, size.z) * 0.88
+	tower.position.y = podium_height + size.y * 0.5
+	root.add_child(tower)
+	var window_shell_mesh := CylinderMesh.new()
+	window_shell_mesh.top_radius = 0.505
+	window_shell_mesh.bottom_radius = 0.565
+	window_shell_mesh.height = size.y * 0.94
+	window_shell_mesh.radial_segments = 32
+	var window_shell := MeshInstance3D.new()
+	window_shell.mesh = window_shell_mesh
+	window_shell.material_override = WINDOW_MATERIAL
+	window_shell.scale = Vector3(size.x, 1.0, size.z) * 0.89
+	window_shell.position.y = podium_height + size.y * 0.5
+	root.add_child(window_shell)
+	for i in range(8):
+		var angle := TAU * float(i) / 8.0
+		var fin := _mesh_box(Vector3(0.55, size.y * 0.94, 0.75), CONCRETE_MATERIAL)
+		fin.position = Vector3(cos(angle) * size.x * 0.39, podium_height + size.y * 0.5, sin(angle) * size.z * 0.39)
+		fin.rotation.y = angle
+		root.add_child(fin)
+	for level in [0.30, 0.58, 0.82]:
+		var balcony := _mesh_cylinder(maxf(size.x, size.z) * 0.47, 0.24, CONCRETE_MATERIAL)
+		balcony.scale = Vector3(1.0, 1.0, size.z / maxf(size.x, 0.1))
+		balcony.position.y = podium_height + size.y * level
+		root.add_child(balcony)
+	var crown := _mesh_cylinder(maxf(size.x, size.z) * 0.38, 2.8, CONCRETE_MATERIAL)
+	crown.scale = Vector3(1.0, 1.0, size.z / maxf(size.x, 0.1))
+	crown.position.y = podium_height + size.y + 1.4
+	root.add_child(crown)
+
+func _add_split_tower_mass(root: Node3D, size: Vector3, podium_height: float, facade_material: Material, style: int) -> void:
+	var left_size := Vector3(size.x * 0.48, size.y * 0.86, size.z * 0.72)
+	var right_size := Vector3(size.x * 0.38, size.y * (0.62 if style == 9 else 0.74), size.z * 0.92)
+	var left := _mesh_box(left_size, facade_material)
+	left.position = Vector3(-size.x * 0.18, podium_height + left_size.y * 0.5, 0.0)
+	root.add_child(left)
+	var right := _mesh_box(right_size, facade_material)
+	right.position = Vector3(size.x * 0.22, podium_height + right_size.y * 0.5, size.z * 0.06)
+	root.add_child(right)
+	var left_grid := _mesh_box(Vector3(left_size.x * 0.92, left_size.y * 0.88, 0.14), WINDOW_MATERIAL)
+	left_grid.position = left.position + Vector3(0.0, 0.0, -left_size.z * 0.51)
+	root.add_child(left_grid)
+	var right_grid := _mesh_box(Vector3(right_size.x * 0.92, right_size.y * 0.88, 0.14), WINDOW_MATERIAL)
+	right_grid.position = right.position + Vector3(0.0, 0.0, -right_size.z * 0.51)
+	root.add_child(right_grid)
+	var spine := _mesh_box(Vector3(2.0, size.y * 0.9, size.z * 0.86), CONCRETE_MATERIAL)
+	spine.position = Vector3(0.0, podium_height + size.y * 0.5, -size.z * 0.02)
+	root.add_child(spine)
+	for side in [-1.0, 1.0]:
+		var balcony := _mesh_box(Vector3(size.x * 0.86, 0.28, 1.25), CONCRETE_MATERIAL)
+		balcony.position = Vector3(0.0, podium_height + size.y * 0.46, side * size.z * 0.47)
+		root.add_child(balcony)
+	var roof := _mesh_box(Vector3(size.x * 0.72, 1.2, size.z * 0.76), CONCRETE_MATERIAL)
+	roof.position = Vector3(-size.x * 0.18, podium_height + left_size.y + 0.6, 0.0)
+	root.add_child(roof)
 
 func _add_rounded_podium(root: Node3D, size: Vector3, podium_height: float) -> void:
 	var curved := CylinderMesh.new()
@@ -155,6 +262,44 @@ func _add_rounded_podium(root: Node3D, size: Vector3, podium_height: float) -> v
 	roof.scale = Vector3(1.0, 1.0, size.z / maxf(size.x, 0.1))
 	roof.position.y = podium_height * 1.30
 	root.add_child(roof)
+
+func _add_showcase_commercial_facade(root: Node3D, size: Vector3, podium_height: float, style: int) -> void:
+	# Hero low-rise treatment: break the podium into readable retail bays instead of one flat box.
+	var glass := GLASS_MATERIAL.duplicate() as StandardMaterial3D
+	glass.albedo_color = [Color(0.16, 0.30, 0.38, 1.0), Color(0.22, 0.40, 0.46, 1.0), Color(0.30, 0.45, 0.48, 1.0)][style % 3]
+	glass.metallic = 0.48
+	glass.roughness = 0.22
+	var frontage := size.x * 0.92
+	var bays := clampi(int(size.x / 7.0), 4, 8)
+	var bay_width := frontage / float(bays)
+	for face in [-1.0, 1.0]:
+		var z: float = face * (size.z * 0.50 + 6.10)
+		for bay in range(bays):
+			var x := -frontage * 0.5 + bay_width * (float(bay) + 0.5)
+			var panel := _mesh_box(Vector3(bay_width * 0.82, podium_height * 0.66, 0.22), glass)
+			panel.position = Vector3(x, podium_height * 0.43, z)
+			root.add_child(panel)
+			var mullion := _mesh_box(Vector3(0.18, podium_height * 0.76, 0.30), CONCRETE_MATERIAL)
+			mullion.position = Vector3(-frontage * 0.5 + bay_width * float(bay), podium_height * 0.48, z - face * 0.06)
+			root.add_child(mullion)
+			if bay % 2 == 0:
+				var awning := _mesh_box(Vector3(bay_width * 0.76, 0.14, 1.20), CONCRETE_MATERIAL)
+				awning.position = Vector3(x, podium_height * 0.78, z + face * 0.62)
+				root.add_child(awning)
+		var fascia := _mesh_box(Vector3(frontage, 0.32, 0.34), CONCRETE_MATERIAL)
+		fascia.position = Vector3(0.0, podium_height * 0.84, z - face * 0.05)
+		root.add_child(fascia)
+	# A shallow planted terrace makes the commercial roof read as a real podium.
+	var terrace := _mesh_box(Vector3(size.x * 0.86, 0.24, size.z * 0.72), CONCRETE_MATERIAL)
+	terrace.position = Vector3(0.0, podium_height + 0.20, 0.0)
+	root.add_child(terrace)
+	for i in range(3):
+		var planter := _mesh_box(Vector3(3.6, 0.38, 1.5), CONCRETE_MATERIAL)
+		planter.position = Vector3(-size.x * 0.28 + i * size.x * 0.28, podium_height + 0.55, -size.z * 0.12)
+		root.add_child(planter)
+		var shrub := _mesh_sphere(0.72, FOLIAGE_MATERIAL)
+		shrub.position = planter.position + Vector3(0.0, 0.72, 0.0)
+		root.add_child(shrub)
 
 func _add_lowrise_annexes(root: Node3D, size: Vector3, podium_height: float) -> void:
 	if size.y < 28.0:
@@ -278,6 +423,33 @@ func _add_facade_spines(root: Node3D, size: Vector3, podium_height: float, facad
 		inset.position = spine.position + Vector3(0.0, 0.0, 0.16)
 		root.add_child(inset)
 
+func _add_facade_modules(root: Node3D, size: Vector3, podium_height: float) -> void:
+	# Real mullions and slab edges break the procedural glass shell into readable bays.
+	# Keep the count bounded because this layer is only used for hero/showcase buildings.
+	if size.y < 30.0:
+		return
+	var floor_count := clampi(int(size.y / 7.0), 4, 12)
+	var bay_count := clampi(int(size.x / 6.0), 3, 8)
+	var y_step := size.y / float(floor_count + 1)
+	for face in [-1.0, 1.0]:
+		for floor in range(1, floor_count + 1):
+			var sill := _mesh_box(Vector3(size.x * 0.78, 0.14, 0.34), CONCRETE_MATERIAL)
+			sill.position = Vector3(0.0, podium_height + y_step * floor, face * size.z * 0.415)
+			root.add_child(sill)
+		for bay in range(1, bay_count):
+			var mullion := _mesh_box(Vector3(0.20, size.y * 0.90, 0.24), CONCRETE_MATERIAL)
+			mullion.position = Vector3(-size.x * 0.39 + size.x * 0.78 * float(bay) / float(bay_count), podium_height + size.y * 0.5, face * size.z * 0.42)
+			root.add_child(mullion)
+	for face in [-1.0, 1.0]:
+		for floor in range(1, floor_count + 1):
+			var sill := _mesh_box(Vector3(0.34, 0.14, size.z * 0.78), CONCRETE_MATERIAL)
+			sill.position = Vector3(face * size.x * 0.415, podium_height + y_step * floor, 0.0)
+			root.add_child(sill)
+		for bay in range(1, bay_count):
+			var mullion := _mesh_box(Vector3(0.24, size.y * 0.90, 0.20), CONCRETE_MATERIAL)
+			mullion.position = Vector3(face * size.x * 0.42, podium_height + size.y * 0.5, -size.z * 0.39 + size.z * 0.78 * float(bay) / float(bay_count))
+			root.add_child(mullion)
+
 func _add_top_setback(root: Node3D, size: Vector3, podium_height: float, facade_material: Material) -> void:
 	var top_height := 5.0 if size.y > 60.0 else 3.8
 	var top_size := Vector3(size.x * 0.68, top_height, size.z * 0.68)
@@ -324,15 +496,16 @@ func _add_roof_garden(root: Node3D, size: Vector3, podium_height: float) -> void
 	roof.position.y = roof_y
 	root.add_child(roof)
 	for i in range(3 if size.y > 30.0 else 2):
-		var planter := _mesh_box(Vector3(3.2, 0.35, 2.1), FOLIAGE_MATERIAL)
+		var planter := _mesh_box(Vector3(4.4, 0.42, 2.8), CONCRETE_MATERIAL)
 		planter.position = Vector3(_rng.randf_range(-size.x * 0.28, size.x * 0.28), roof_y + 0.55, _rng.randf_range(-size.z * 0.28, size.z * 0.28))
 		root.add_child(planter)
-		var trunk := _mesh_cylinder(0.16, 1.8, CONCRETE_MATERIAL)
-		trunk.position = planter.position + Vector3(0, 1.0, 0)
-		root.add_child(trunk)
-		var crown := _mesh_sphere(1.1, FOLIAGE_MATERIAL)
-		crown.position = planter.position + Vector3(0, 2.2, 0)
-		root.add_child(crown)
+		for tree_index in range(3):
+			var trunk := _mesh_cylinder(0.14, 1.65 + tree_index * 0.12, CONCRETE_MATERIAL)
+			trunk.position = planter.position + Vector3(-1.25 + tree_index * 1.25, 1.0, (tree_index % 2) * 0.45 - 0.22)
+			root.add_child(trunk)
+			var crown := _mesh_sphere(0.92 + tree_index * 0.12, FOLIAGE_MATERIAL)
+			crown.position = trunk.position + Vector3(0, 1.95 + tree_index * 0.10, 0)
+			root.add_child(crown)
 
 func _load_kenney_detail() -> void:
 	if _kenney_load_attempted:
