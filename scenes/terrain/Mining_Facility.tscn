@@ -1,0 +1,20 @@
+[gd_scene format=3]
+[node name="MiningFacility" type="Node3D"]
+[node name="QuarryPit" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,-5,0)
+mesh = SubResource(1)
+[node name="Crusher" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,15,3,0)
+mesh = SubResource(2)
+[node name="Conveyor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,5,2,10)
+mesh = SubResource(3)
+[node name="Trucks" type="Node3D" parent="."]
+[sub_resource type="CylinderMesh" id=1]
+top_radius = 20
+bottom_radius = 18
+height = 10
+[sub_resource type="BoxMesh" id=2]
+size = Vector3(8,6,8)
+[sub_resource type="BoxMesh" id=3]
+size = Vector3(2,1,25)

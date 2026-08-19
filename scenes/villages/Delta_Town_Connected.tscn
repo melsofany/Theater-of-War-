@@ -1,0 +1,28 @@
+[gd_scene format=3]
+[node name="DeltaTown" type="Node3D"]
+[node name="MainStreet" type="MeshInstance3D" parent="."]
+mesh = SubResource(1)
+[node name="HousesRow" type="Node3D" parent="."]
+[node name="H1" type="MeshInstance3D" parent="HousesRow"]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,-10,1.5,5)
+mesh = SubResource(2)
+[node name="H2" type="MeshInstance3D" parent="HousesRow"]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,1.5,5)
+mesh = SubResource(2)
+[node name="H3" type="MeshInstance3D" parent="HousesRow"]
+transform = Transform3D(1,0,0,0,1,0,1,0,1,10,1.5,5)
+mesh = SubResource(2)
+[node name="Mosque" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,3, -8)
+mesh = SubResource(3)
+[node name="Fields" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,0,20)
+mesh = SubResource(4)
+[sub_resource type="BoxMesh" id=1]
+size = Vector3(40,0.1,6)
+[sub_resource type="BoxMesh" id=2]
+size = Vector3(8,3,8)
+[sub_resource type="BoxMesh" id=3]
+size = Vector3(6,6,6)
+[sub_resource type="PlaneMesh" id=4]
+size = Vector2(50,20)

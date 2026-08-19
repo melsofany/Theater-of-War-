@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+albedo_color = Color(0.96, 0.97, 0.92, 1)
+roughness = 0.58
+metallic = 0.0
+shading_mode = 1
+cull_mode = 2
+resource_name = "RoadMarking_WarmWhite"

@@ -1,0 +1,21 @@
+[gd_scene format=3]
+[node name="MountainRoadTunnel" type="Node3D"]
+[node name="Road" type="MeshInstance3D" parent="."]
+mesh = SubResource(1)
+[node name="MountainLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,-15,5,0)
+mesh = SubResource(2)
+[node name="MountainRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,15,5,0)
+mesh = SubResource(2)
+[node name="TunnelEntrance" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,3,40)
+mesh = SubResource(3)
+[sub_resource type="BoxMesh" id=1]
+size = Vector3(7,0.2,100)
+[sub_resource type="BoxMesh" id=2]
+size = Vector3(10,15,100)
+[sub_resource type="CylinderMesh" id=3]
+top_radius = 4
+bottom_radius = 4
+height = 8

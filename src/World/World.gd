@@ -22,7 +22,7 @@ var spatial_grid: SpatialGrid = SpatialGrid.new(16.0)
 
 func _ready() -> void:
 	if not map_data:
-		map_data = TerrainGenerator.new().generate()
+		map_data = TerrainGenerator.new().generate(512, 4.0)
 	_build_terrain()
 	_build_features()
 	if units_root:
@@ -39,6 +39,11 @@ func _build_terrain() -> void:
 	else:
 		terrain = Terrain.new()
 	add_child(terrain)
+	# Stream the continuous world around the active battlefield. The map data
+	# remains full-size while only nearby terrain chunks are rendered.
+	terrain.streaming = true
+	terrain.chunk_size = 128.0
+	terrain.stream_view_radius = 512.0
 	terrain.set_map_data(map_data)
 
 
@@ -47,7 +52,9 @@ func _build_features() -> void:
 		return
 	for c in features_root.get_children():
 		c.queue_free()
-	for city in map_data.cities:
+	var city_script = load("res://src/World/PhotorealCityGenerator.gd")
+	for city_index in range(map_data.cities.size()):
+		var city = map_data.cities[city_index]
 		var node: City = null
 		if city_scene:
 			node = city_scene.instantiate() as City
@@ -58,6 +65,18 @@ func _build_features() -> void:
 		pos.y = map_data.height_at(pos.x, pos.z)
 		node.global_position = pos
 		node.city_name = city["name"]
+		if node.body_mesh:
+			node.body_mesh.visible = false
+		if city_script:
+			var real_city: Node3D = city_script.new()
+			real_city.name = "PhotorealCity_" + str(city["name"])
+			features_root.add_child(real_city)
+			real_city.global_position = pos
+			var contested: bool = bool(city.get("contested", false)) or city_index % 7 == 0
+			if real_city.has_method("build_city"):
+				real_city.showcase_density = str(city["name"]).to_lower().find("cairo") >= 0
+				real_city.build_city(str(city["name"]), city_index, contested)
+
 	for z in map_data.zones:
 		var node: StrategicZone = null
 		if zone_scene:

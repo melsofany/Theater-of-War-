@@ -1,0 +1,19 @@
+[gd_scene format=3]
+[node name="FarmingVillage" type="Node3D"]
+[node name="Barns" type="MeshInstance3D" parent="."]
+mesh = SubResource(1)
+[node name="Silos" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,12,4,0)
+mesh = SubResource(2)
+[node name="Fields" type="Node3D" parent="."]
+[node name="Field1" type="MeshInstance3D" parent="Fields"]
+mesh = SubResource(3)
+[node name="Field2" type="MeshInstance3D" parent="Fields"]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,30,0,0)
+mesh = SubResource(3)
+[sub_resource type="BoxMesh" id=1]
+size = Vector3(15,5,20)
+[sub_resource type="CylinderMesh" id=2]
+height = 8
+[sub_resource type="PlaneMesh" id=3]
+size = Vector2(25,25)

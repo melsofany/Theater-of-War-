@@ -1,0 +1,38 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/glass_fixed_opaque.tres" id="1_opaque"]
+[ext_resource type="Material" path="res://assets/materials/concrete.tres" id="2_concrete"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_tower_fixed"]
+size = Vector3(24, 60, 24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_podium_fixed"]
+size = Vector3(44, 6, 44)
+
+[sub_resource type="BoxShape3D" id="BoxShape_tower_fixed"]
+size = Vector3(24, 60, 24)
+
+[sub_resource type="BoxShape3D" id="BoxShape_podium_fixed"]
+size = Vector3(44, 6, 44)
+
+[node name="GlassTower_FIXED" type="Node3D"]
+
+[node name="Podium" type="MeshInstance3D" parent="."]
+position = Vector3(0, 3, 0)
+mesh = SubResource("BoxMesh_podium_fixed")
+material_override = ExtResource("2_concrete")
+
+[node name="Core" type="MeshInstance3D" parent="."]
+position = Vector3(0, 36, 0)
+mesh = SubResource("BoxMesh_tower_fixed")
+material_override = ExtResource("1_opaque")
+
+[node name="CollisionBody" type="StaticBody3D" parent="."]
+
+[node name="PodiumCollision" type="CollisionShape3D" parent="CollisionBody"]
+position = Vector3(0, 3, 0)
+shape = SubResource("BoxShape_podium_fixed")
+
+[node name="TowerCollision" type="CollisionShape3D" parent="CollisionBody"]
+position = Vector3(0, 36, 0)
+shape = SubResource("BoxShape_tower_fixed")

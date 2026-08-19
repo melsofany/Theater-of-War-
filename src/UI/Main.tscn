@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://maintowar01"]
+[gd_scene load_steps=14 format=3 uid="uid://maintowar01"]
 
 [ext_resource type="Script" path="res://src/UI/Main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://src/World/World.tscn" id="2_world"]
@@ -8,16 +8,38 @@
 [ext_resource type="Script" path="res://src/UI/RTSCamera.gd" id="6_cam"]
 [ext_resource type="Script" path="res://src/UI/PlayerController.gd" id="7_pc"]
 [ext_resource type="PackedScene" path="res://src/UI/Minimap.tscn" id="8_mm"]
+[ext_resource type="Script" path="res://src/World/Hotfix_FullWorld.gd" id="9_hotfix"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_day"]
+sky_top_color = Color(0.34, 0.62, 0.92, 1)
+sky_horizon_color = Color(0.88, 0.95, 1.0, 1)
+ground_bottom_color = Color(0.20, 0.30, 0.38, 1)
+ground_horizon_color = Color(0.76, 0.84, 0.90, 1)
+sun_angle_max = 12.0
+
+[sub_resource type="Sky" id="Sky_day"]
+sky_material = SubResource("SkyMaterial_day")
 
 [sub_resource type="Environment" id="Environment_military"]
-background_mode = 1
-background_color = Color(0.32, 0.39, 0.48, 1)
+background_mode = 2
+sky = SubResource("Sky_day")
 ambient_light_source = 3
-ambient_light_color = Color(0.62, 0.68, 0.78, 1)
-ambient_light_energy = 0.7
+ambient_light_color = Color(0.72, 0.80, 0.92, 1)
+ambient_light_energy = 1.08
 reflected_light_source = 2
 tonemap_mode = 2
 glow_enabled = true
+glow_intensity = 0.14
+ssr_enabled = true
+ssr_max_steps = 64
+ssr_fade_in = 0.15
+ssr_fade_out = 2.0
+ssao_enabled = true
+ssao_radius = 3.0
+ssao_intensity = 0.52
+sdfgi_enabled = true
+sdfgi_cascades = 2
+sdfgi_min_cell_size = 0.5
 
 [sub_resource type="StandardMaterial3D" id="Material_ground_overlay"]
 albedo_color = Color(0.32, 0.38, 0.22, 1)
@@ -28,19 +50,26 @@ script = ExtResource("1_main")
 
 [node name="World" parent="." instance=ExtResource("2_world")]
 
+[node name="HotfixFullWorld" type="Node3D" parent="."]
+script = ExtResource("9_hotfix")
+fix_transparency = true
+add_ground = false
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_military")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-52, -28, 0)
-light_color = Color(1, 0.91, 0.76, 1)
-light_energy = 1.35
+light_color = Color(1, 0.96, 0.88, 1)
+light_energy = 2.55
 shadow_enabled = true
+shadow_bias = 0.02
+directional_shadow_max_distance = 500.0
 
 [node name="FillLight" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-35, 145, 0)
-light_color = Color(0.42, 0.55, 0.78, 1)
-light_energy = 0.28
+light_color = Color(0.58, 0.72, 0.92, 1)
+light_energy = 0.52
 shadow_enabled = false
 
 [node name="Camera3D" type="Camera3D" parent="."]

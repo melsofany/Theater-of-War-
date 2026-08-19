@@ -132,6 +132,8 @@ func _rebuild_visual_model() -> void:
 		node.queue_free()
 	# RTS readability: keep units visibly larger than the terrain grid.
 	visual_model.scale = Vector3.ONE * 1.65
+	# Give every unit a grounded contact shadow before adding its visual asset.
+	_add_ground_shadow()
 	# Prefer the supplied top-down Meta AI art when available. The procedural
 	# meshes below remain as a safe fallback for unsupported unit categories.
 	if _add_meta_asset_sprite():
@@ -207,7 +209,7 @@ func _meta_asset_path() -> String:
 		UnitType.Category.INFANTRY:
 			return "res://assets/meta_units/infantry_topdown.png"
 		UnitType.Category.SNIPER:
-			return "res://assets/sprites/units/sniper.png"
+			return "res://assets/meta_units/sniper_topdown.png"
 		UnitType.Category.VEHICLE:
 			return "res://assets/meta_units/vehicle_apc_topdown.png"
 		UnitType.Category.TANK:
@@ -237,15 +239,33 @@ func _add_meta_asset_sprite() -> bool:
 	sprite.name = "MetaAssetSprite"
 	sprite.texture = texture
 	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sprite.shaded = true
+	sprite.shaded = false
 	sprite.no_depth_test = false
-	sprite.pixel_size = 0.00105
+	sprite.pixel_size = 0.00165
 	sprite.position = Vector3(0, 1.15, 0)
 	if unit_type.category == UnitType.Category.SNIPER:
-		sprite.pixel_size = 0.0032
-		sprite.position.y = 0.72
+		sprite.pixel_size = 0.00145
+		sprite.position.y = 0.82
 	visual_model.add_child(sprite)
 	return true
+
+
+func _add_ground_shadow() -> void:
+	var shadow := MeshInstance3D.new()
+	shadow.name = "ContactShadow"
+	var shadow_mesh := CylinderMesh.new()
+	shadow_mesh.top_radius = 0.62
+	shadow_mesh.bottom_radius = 0.72
+	shadow_mesh.height = 0.035
+	shadow.mesh = shadow_mesh
+	shadow.position = Vector3(0.0, 0.025, 0.0)
+	var shadow_mat := StandardMaterial3D.new()
+	shadow_mat.albedo_color = Color(0.015, 0.02, 0.018, 0.42)
+	shadow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	shadow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	shadow_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	shadow.material_override = shadow_mat
+	visual_model.add_child(shadow)
 
 
 func _box(size: Vector3) -> BoxMesh:

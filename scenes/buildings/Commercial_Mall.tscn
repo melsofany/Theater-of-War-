@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="BoxMesh" id="BoxMesh_commercial_mall"]
+size = Vector3(60, 12, 30)
+
+[node name="Mall_3F" type="Node3D"]
+
+[node name="Main" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_commercial_mall")

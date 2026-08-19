@@ -1,0 +1,17 @@
+[gd_scene format=3]
+[node name="DesertHighway" type="Node3D"]
+[node name="Road" type="MeshInstance3D" parent="."]
+mesh = SubResource(1)
+[node name="SandShoulders" type="MeshInstance3D" parent="."]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,0,-0.1,0)
+mesh = SubResource(2)
+[node name="PowerPoles" type="Node3D" parent="."]
+[node name="Pole1" type="MeshInstance3D" parent="PowerPoles"]
+transform = Transform3D(1,0,0,0,1,0,0,0,1,8,3,0)
+mesh = SubResource(3)
+[sub_resource type="BoxMesh" id=1]
+size = Vector3(8,0.15,100)
+[sub_resource type="PlaneMesh" id=2]
+size = Vector2(20,100)
+[sub_resource type="CylinderMesh" id=3]
+height = 6

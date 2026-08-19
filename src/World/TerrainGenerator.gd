@@ -8,16 +8,19 @@ extends RefCounted
 class_name TerrainGenerator
 
 var _noise: FastNoiseLite
+const UNIFIED_MAP_ADAPTER = preload("res://src/World/UnifiedMapAdapter.gd")
 
 
 func _init(seed: int = 1337) -> void:
 	_noise = FastNoiseLite.new()
 	_noise.seed = seed
-	_noise.frequency = 0.012
+	_noise.frequency = 0.006
 	_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 
 
-func generate(map_size: int = 96, cell: float = 2.0) -> MapData:
+# The free-world runtime uses a 2 km-class battlefield by default. Explicit
+# size/cell arguments remain available for deterministic tests and tools.
+func generate(map_size: int = 512, cell: float = 4.0) -> MapData:
 	var md := MapData.new()
 	md.size = map_size
 	md.cell = cell
@@ -45,7 +48,7 @@ func generate(map_size: int = 96, cell: float = 2.0) -> MapData:
 	var river := PackedVector2Array()
 	var half := float(map_size) * cell * 0.5
 	for gz in range(0, map_size, 4):
-		var wx := half + sin(float(gz) * 0.08) * 6.0
+		var wx := sin(float(gz) * 0.035) * 24.0
 		var wz := md.origin.z + gz * cell
 		river.append(Vector2(wx, wz))
 	# Thicken into a polygon (offset both sides).
@@ -63,14 +66,17 @@ func generate(map_size: int = 96, cell: float = 2.0) -> MapData:
 	road.append(Vector2(-half, 0))
 	road.append(Vector2(half, 0))
 	md.add_road(road)
-	md.add_bridge(Vector2(half, 0), 4.0)
+	md.add_bridge(Vector2(0.0, 0.0), 8.0)
 
-	# Two cities.
+	# Baseline features remain available if the attached map data is absent.
 	md.add_city("Northport", Vector3(half * 0.4, 0, -half * 0.5))
 	md.add_city("Southfield", Vector3(-half * 0.5, 0, half * 0.4))
-
-	# Strategic zones.
 	md.add_zone("Crossing", Rect2(half - 10, -8, 20, 16))
 	md.add_zone("Ridge", Rect2(md.origin.x, -half, float(map_size) * cell, half))
+
+	# The attached Unified Map JSON replaces only feature data; the local
+	# heightfield and water/bridge generation remain unchanged.
+	if FileAccess.file_exists("res://data/maps/unified_world_map_16384.json"):
+		UNIFIED_MAP_ADAPTER.apply_to_map(md)
 
 	return md

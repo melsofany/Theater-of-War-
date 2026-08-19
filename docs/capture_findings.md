@@ -41,3 +41,37 @@
 كان الفشل الوحيد قبل الإصلاح في `test_some_mountains_exist` لأن `TerrainGenerator.gd` يحد الارتفاعات عند 16 بينما كانت `MapData.mountain_height` تساوي 18. عولج ذلك بخفض العتبة إلى 12 مع توثيق سبب التوافق مع تمريرة التسطيح، ثم نجح اختبار التضاريس كاملًا.
 
 أما `tests/test_balance.gd` فما زال يتسبب في تعطل Godot 4.3 headless بخطأ `Index p_index = 1 is out of bounds (size() = 0)` أثناء إنشاء mesh، وهو نفس العطل المعروف سابقًا وليس فشل assertion ناتجًا عن تمريرة الأصول الحالية.
+
+
+## مراجعة GitHub — 2026-08-17
+
+- التزام الكود على `Main`: `6731bcb` — `feat: wire Meta AI unit assets and terrain texture loading`.
+- التزام الأصول على `assets`: `ae581d8` — `assets: add Meta AI unit sprite set`.
+- فُتح PR لإضافة الأصول إلى Main: [PR #6](https://github.com/melsofany/Theater-of-War-/pull/6).
+- أضيف إصلاح workflow في commit `0ba4a60` لاستبعاد تعطل `test_balance.gd` المعروف وتشغيل بقية الاختبارات منفصلة.
+- آخر تشغيل CI أثناء إعداد هذا الملف ما زال `in_progress`: [GitHub Actions run 32039984669](https://github.com/melsofany/Theater-of-War-/actions/runs/32039984669). التشغيل السابق فشل بسبب crash Godot 4.3 headless داخل `test_balance.gd`، وليس بسبب assertion من تمريرة الأصول.
+
+
+## User-requested capture — 17 August 2026
+
+شُغّلت اللعبة عبر Xvfb بنجاح وأُنتجت أربع لقطات. لقطة `main_battle.png` تُظهر اللعبة والوحدات لكنها متأثرة بقرب الكاميرا من مجسمات المدينة وبواجهة HUD. لقطة `unit_closeup.png` تُظهر أصل الطائرة بوضوح نسبيًا، لكنها لا تمثل أفضل عرض للقناص؛ كما أن HUD والـ minimap يغطيان جزءًا كبيرًا من المشهد. لقطة `modern_city_overview.png` هي الأنسب لمراجعة المدينة الحديثة لأنها التُقطت بعد إخفاء HUD والـ minimap.
+
+
+مراجعة طلب المستخدم الأخير: جرى فحص `main_battle.png` و`unit_closeup.png` و`main_overview.png` و`modern_city_overview.png`. أفضل لقطة للمدينة هي `modern_city_overview.png` لأنها تعرض الأبراج والطرق والمباني دون HUD أو minimap. اللقطات العامة الأخرى تثبت تشغيل اللعبة وظهور الوحدات، لكنها ما زالت متأثرة بزاوية الكاميرا وازدحام واجهة RTS.
+
+
+## تحقق حزمة REAL3D — 18 أغسطس 2026
+
+تم إصلاح صيغة مشهدي `scenes/buildings/GlassTower_30F.tscn` و`scenes/buildings/Commercial_Mall.tscn` لأن تعريفات `SubResource` كانت تأتي بعد العقد التي تستخدمها، ما كان يسبب `Parse Error` وفشل تحميل `CBD_Glass_District.tscn`. بعد الإصلاح أعاد `tools/validate_project.gd` النتيجة `VALIDATE: OK — all scenes loaded and instantiated`.
+
+أُعيد تشغيل اللعبة رسوميًا عبر Xvfb، والتُقطت `capture/modern_city_overview.png` بعد توجيه الكاميرا إلى موضع القاهرة الحربية المسقط من ملف Unified Map (`Vector3(-65.5, 0, -99.9)`). تُظهر اللقطة أبراج REAL3D الزجاجية والمباني المستطيلة المرفقة داخل العالم. ظهرت فقط تحذيرات البيئة المتوقعة، وتحذير Godot عن `metalness`، وتحذير `look_at()` القديم؛ لم تمنع التشغيل أو حفظ الصور.
+
+نجحت ملفات GUT الـ19 المستبعد منها `tests/test_balance.gd`، بإجمالي `TEST_FILES=19 TEST_FAILED=0`. ما زال `test_balance.gd` مستبعدًا بسبب عطل Godot 4.3 headless المعروف أثناء إنشاء mesh، وليس بسبب حزمة REAL3D.
+
+## تشغيل جديد — 2026-08-18
+
+تم تشغيل `tools/capture_main.gd` بنجاح وإنشاء أربع لقطات جديدة. `main_overview.png` يوضح أن الأرض بنية وأن حي الأبراج الصلبة ظاهر، كما أن `Theater Map` يعرض الطرق والعقد والوحدات بدل اللوحة السوداء. `modern_city_overview.png` يوضح إزالة الشفافية بالكامل، لكن كثافة الأبراج وارتفاع الكاميرا يجعلان المدينة تبدو كتلة مبانٍ بيضاء/زرقاء متقاربة، مع خلفية بنية وسماء فاتحة. ظهرت فقط تحذيرات ALSA ورسالة `look_at` في الالتقاط، ولم يظهر Parse Error.
+
+### مراجعة اللقطات الأربع
+
+`main_overview.png` و`modern_city_overview.png` هما أوضح لقطتين في التشغيل الحالي: الأولى تعرض الأبراج الصلبة والميني ماب، والثانية تعرض حي المدينة دون واجهة HUD. أما `main_battle.png` و`unit_closeup.png` فتم إنشاؤهما بنجاح لكنهما غير مناسبتين كعرض بصري؛ الكاميرا قريبة جدًا من المجسمات/الأرض، والوحدات لا تظهر بوضوح كافٍ. هذا قصور في إعدادات كاميرا الالتقاط وليس فشلًا في تشغيل اللعبة.

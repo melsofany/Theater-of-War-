@@ -49,10 +49,12 @@ func _build_terrain() -> void:
 		c.queue_free()
 	_chunk_meshes.clear()
 	_chunk_manager = null
-	_ground_mat = StandardMaterial3D.new()
-	_ground_mat.vertex_color_use_as_albedo = true
-	_ground_mat.roughness = 0.95
-	_ground_mat.metalness = 0.0
+	_ground_mat = load("res://assets/materials/ground_terrain_fixed.tres") as StandardMaterial3D
+	if _ground_mat == null:
+		_ground_mat = StandardMaterial3D.new()
+		_ground_mat.vertex_color_use_as_albedo = true
+		_ground_mat.roughness = 0.95
+		_ground_mat.metalness = 0.0
 	if streaming:
 		_build_streaming_ground()
 	else:
@@ -187,17 +189,18 @@ func _build_ground() -> void:
 	_mesh_instance = MeshInstance3D.new()
 	_mesh_instance.mesh = st.commit()
 	_mesh_instance.cast_shadow = 1  # GeometryInstance3D.ShadowCastingSetting.ON
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = false
-	mat.albedo_color = Color.WHITE
-	mat.albedo_texture = _load_texture("res://assets/textures/terrain/grass.png")
-	mat.normal_enabled = true
-	mat.normal_texture = _load_texture("res://assets/textures/terrain/grass_normal.png")
-	mat.roughness_texture = _load_texture("res://assets/textures/terrain/grass_roughness.png")
-
-	mat.roughness = 0.88
-	mat.metallic = 0.0
-	mat.uv1_scale = Vector3(7.0, 7.0, 7.0)
+	var mat := load("res://assets/materials/ground_terrain_fixed.tres") as StandardMaterial3D
+	if mat == null:
+		mat = StandardMaterial3D.new()
+		mat.vertex_color_use_as_albedo = false
+		mat.albedo_color = Color.WHITE
+		mat.albedo_texture = _load_texture("res://assets/textures/terrain/grass.png")
+		mat.normal_enabled = true
+		mat.normal_texture = _load_texture("res://assets/textures/terrain/grass_normal.png")
+		mat.roughness_texture = _load_texture("res://assets/textures/terrain/grass_roughness.png")
+		mat.roughness = 0.88
+		mat.metallic = 0.0
+		mat.uv1_scale = Vector3(7.0, 7.0, 7.0)
 	_mesh_instance.material_override = mat
 	add_child(_mesh_instance)
 
@@ -238,6 +241,7 @@ func _build_water() -> void:
 	wmat.normal_texture = _load_texture("res://assets/textures/terrain/water_normal.png")
 	wmat.roughness_texture = _load_texture("res://assets/textures/terrain/water_roughness.png")
 
+	wmat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	wmat.albedo_color = Color(0.28, 0.55, 0.82, 0.82)
 	wmat.roughness = 0.18
@@ -253,7 +257,7 @@ func _build_roads() -> void:
 		return
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	const W := 1.2
+	const W := 6.0
 	for line in md.roads:
 		var pts := line as PackedVector2Array
 		for i in pts.size() - 1:
@@ -261,8 +265,8 @@ func _build_roads() -> void:
 			var b := pts[i + 1]
 			var d := (b - a).normalized()
 			var n := Vector2(-d.y, d.x) * W
-			var ah := md.height_at(a.x, a.y) + 0.1
-			var bh := md.height_at(b.x, b.y) + 0.1
+			var ah := md.height_at(a.x, a.y) + 0.65
+			var bh := md.height_at(b.x, b.y) + 0.65
 			var v0 := Vector3(a.x + n.x, ah, a.y + n.y)
 			var v1 := Vector3(a.x - n.x, ah, a.y - n.y)
 			var v2 := Vector3(b.x + n.x, bh, b.y + n.y)
@@ -279,11 +283,12 @@ func _build_roads() -> void:
 	_road_mesh.mesh = st.commit()
 	_road_mesh.cast_shadow = 0
 	var rmat := StandardMaterial3D.new()
+	rmat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	rmat.albedo_texture = _load_texture("res://assets/textures/terrain/road.png")
 	rmat.normal_enabled = true
 	rmat.normal_texture = _load_texture("res://assets/textures/terrain/road_normal.png")
 	rmat.roughness_texture = _load_texture("res://assets/textures/terrain/road_roughness.png")
-	rmat.albedo_color = Color(0.72, 0.70, 0.66)
+	rmat.albedo_color = Color(0.24, 0.27, 0.29)
 	rmat.roughness = 0.92
 	rmat.uv1_scale = Vector3(5.0, 5.0, 5.0)
 	_road_mesh.material_override = rmat
@@ -298,9 +303,14 @@ func _load_texture(path: String) -> Texture2D:
 
 
 func _elevation_color(h: float, md: MapData) -> Color:
+	# Deliberate RTS readability bands: lowlands, grassland, dry plateau, rock.
+	# The PBR ground material multiplies these vertex colors with the existing
+	# grass texture, preserving detail while keeping strategic terrain legible.
 	if h >= md.mountain_height:
 		var t := clampf((h - md.mountain_height) / 6.0, 0.0, 1.0)
-		return Color(0.28, 0.31, 0.32).lerp(Color(0.62, 0.65, 0.64), t)
+		return Color(0.24, 0.27, 0.25).lerp(Color(0.48, 0.52, 0.50), t)
 	if h >= md.plateau_height:
-		return Color(0.48, 0.42, 0.28)
-	return Color(0.16, 0.28, 0.12).lerp(Color(0.38, 0.44, 0.18), clampf(h / 8.0, 0.0, 1.0))
+		return Color(0.34, 0.36, 0.25)
+	if h < 2.0:
+		return Color(0.24, 0.34, 0.16).lerp(Color(0.36, 0.44, 0.20), h / 2.0)
+	return Color(0.28, 0.46, 0.18).lerp(Color(0.48, 0.50, 0.22), clampf((h - 2.0) / 6.0, 0.0, 1.0))

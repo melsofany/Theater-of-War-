@@ -1,0 +1,642 @@
+{
+  "map_id": "unified_world_16384_v1",
+  "name": "Theater of War - Unified World Map",
+  "size": [
+    16384,
+    16384
+  ],
+  "chunk_size": 256,
+  "streaming": {
+    "enabled": true,
+    "lod_distances": [
+      300,
+      800,
+      2000
+    ],
+    "chunk_manager": "ChunkManager"
+  },
+  "zones": [
+    {
+      "id": "north_front",
+      "name": "الجبهة الشمالية",
+      "bounds": [
+        0,
+        0,
+        8000,
+        3500
+      ],
+      "terrain": [
+        "urban_dense",
+        "industrial",
+        "port"
+      ],
+      "city_ids": [
+        "alex_new",
+        "cairo_war",
+        "industrial_city"
+      ],
+      "faction": "ALLIANCE"
+    },
+    {
+      "id": "western_desert",
+      "name": "الصحراء الغربية",
+      "bounds": [
+        0,
+        3500,
+        4000,
+        10500
+      ],
+      "terrain": [
+        "desert",
+        "dunes",
+        "rocky"
+      ],
+      "city_ids": [
+        "siwa_oasis",
+        "desert_base"
+      ],
+      "faction": "FEDERATION"
+    },
+    {
+      "id": "delta_ops",
+      "name": "دلتا العمليات",
+      "bounds": [
+        4000,
+        3500,
+        11000,
+        7500
+      ],
+      "terrain": [
+        "fertile_plains",
+        "river",
+        "urban",
+        "agricultural"
+      ],
+      "city_ids": [
+        "delta_center",
+        "delta_towns"
+      ],
+      "faction": "CONTESTED"
+    },
+    {
+      "id": "sea_coast",
+      "name": "ساحل البحر",
+      "bounds": [
+        11000,
+        0,
+        16384,
+        6000
+      ],
+      "terrain": [
+        "coastal",
+        "beach",
+        "shallow_sea",
+        "deep_sea"
+      ],
+      "city_ids": [
+        "east_port",
+        "tourist_resort"
+      ],
+      "faction": "COALITION"
+    },
+    {
+      "id": "eastern_heights",
+      "name": "المرتفعات الشرقية",
+      "bounds": [
+        11000,
+        6000,
+        16384,
+        11000
+      ],
+      "terrain": [
+        "plateau",
+        "hills",
+        "mountains",
+        "tunnels"
+      ],
+      "city_ids": [
+        "ash_stronghold",
+        "highland_villages"
+      ],
+      "faction": "HOSTILE"
+    },
+    {
+      "id": "southern_depth",
+      "name": "العمق الجنوبي",
+      "bounds": [
+        0,
+        10500,
+        16384,
+        16384
+      ],
+      "terrain": [
+        "plains",
+        "fortified",
+        "industrial"
+      ],
+      "city_ids": [
+        "dark_fort",
+        "defense_line"
+      ],
+      "faction": "COALITION"
+    }
+  ],
+  "cities": [
+    {
+      "id": "alex_new",
+      "name": "الإسكندرية الجديدة",
+      "arabic": "الإسكندرية الجديدة",
+      "zone": "north_front",
+      "pos": [
+        1500,
+        1200
+      ],
+      "size": 1100,
+      "pop": 2200000,
+      "is_port": true,
+      "districts": 9,
+      "npc_base": 32,
+      "building_target": 480,
+      "faction": "ALLIANCE",
+      "type": "metropolis"
+    },
+    {
+      "id": "cairo_war",
+      "name": "Al Qahira Al Harbiya",
+      "arabic": "القاهرة الحربية",
+      "zone": "north_front",
+      "pos": [
+        4000,
+        1800
+      ],
+      "size": 1200,
+      "pop": 2800000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 38,
+      "building_target": 520,
+      "faction": "ALLIANCE",
+      "type": "metropolis"
+    },
+    {
+      "id": "industrial_city",
+      "name": "Madinat Al Sinaat",
+      "arabic": "مدينة الصناعات",
+      "zone": "north_front",
+      "pos": [
+        6500,
+        2000
+      ],
+      "size": 900,
+      "pop": 900000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 22,
+      "building_target": 380,
+      "faction": "ALLIANCE",
+      "type": "industrial"
+    },
+    {
+      "id": "delta_center",
+      "name": "Delta Center",
+      "arabic": "دلتا المركز",
+      "zone": "delta_ops",
+      "pos": [
+        7000,
+        5000
+      ],
+      "size": 1300,
+      "pop": 3200000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 45,
+      "building_target": 600,
+      "faction": "CONTESTED",
+      "type": "dense_urban"
+    },
+    {
+      "id": "delta_towns",
+      "name": "Delta Towns Cluster",
+      "arabic": "بلدات الدلتا",
+      "zone": "delta_ops",
+      "pos": [
+        5000,
+        6500
+      ],
+      "size": 800,
+      "pop": 1500000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 28,
+      "building_target": 350,
+      "faction": "CONTESTED",
+      "type": "towns"
+    },
+    {
+      "id": "east_port",
+      "name": "Minaa Al Sharq",
+      "arabic": "ميناء الشرق",
+      "zone": "sea_coast",
+      "pos": [
+        13500,
+        2500
+      ],
+      "size": 1100,
+      "pop": 2500000,
+      "is_port": true,
+      "districts": 9,
+      "npc_base": 35,
+      "building_target": 460,
+      "faction": "COALITION",
+      "type": "coastal_metropolis"
+    },
+    {
+      "id": "tourist_resort",
+      "name": "Al Muntaja Al Harbi",
+      "arabic": "المنتجع الحربي",
+      "zone": "sea_coast",
+      "pos": [
+        14000,
+        4500
+      ],
+      "size": 800,
+      "pop": 800000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 20,
+      "building_target": 300,
+      "faction": "COALITION",
+      "type": "tourist"
+    },
+    {
+      "id": "ash_stronghold",
+      "name": "Maqil Al Ramad",
+      "arabic": "معقل الرماد",
+      "zone": "eastern_heights",
+      "pos": [
+        13000,
+        8000
+      ],
+      "size": 900,
+      "pop": 750000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 24,
+      "building_target": 380,
+      "faction": "HOSTILE",
+      "type": "mountain_city"
+    },
+    {
+      "id": "highland_villages",
+      "name": "Qura Al Murtafa'at",
+      "arabic": "قرى المرتفعات",
+      "zone": "eastern_heights",
+      "pos": [
+        12000,
+        9500
+      ],
+      "size": 600,
+      "pop": 300000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 15,
+      "building_target": 200,
+      "faction": "HOSTILE",
+      "type": "villages"
+    },
+    {
+      "id": "siwa_oasis",
+      "name": "Wahet Siwa",
+      "arabic": "واحة سيوة",
+      "zone": "western_desert",
+      "pos": [
+        1200,
+        6000
+      ],
+      "size": 800,
+      "pop": 450000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 18,
+      "building_target": 320,
+      "faction": "FEDERATION",
+      "type": "desert_town"
+    },
+    {
+      "id": "desert_base",
+      "name": "Muaskar Al Sahra",
+      "arabic": "معسكر الصحراء",
+      "zone": "western_desert",
+      "pos": [
+        2000,
+        9000
+      ],
+      "size": 700,
+      "pop": 120000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 12,
+      "building_target": 180,
+      "faction": "FEDERATION",
+      "type": "military_base"
+    },
+    {
+      "id": "dark_fort",
+      "name": "Hisn Al Zalam",
+      "arabic": "حصن الظلام",
+      "zone": "southern_depth",
+      "pos": [
+        6000,
+        13000
+      ],
+      "size": 1000,
+      "pop": 1200000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 28,
+      "building_target": 400,
+      "faction": "COALITION",
+      "type": "fortress"
+    },
+    {
+      "id": "defense_line",
+      "name": "Khat Al Difa Al Akhir",
+      "arabic": "خط الدفاع الأخير",
+      "zone": "southern_depth",
+      "pos": [
+        10000,
+        14000
+      ],
+      "size": 900,
+      "pop": 500000,
+      "is_port": false,
+      "districts": 9,
+      "npc_base": 20,
+      "building_target": 250,
+      "faction": "COALITION",
+      "type": "defense_line"
+    }
+  ],
+  "roads": {
+    "highways": [
+      {
+        "from": "alex_new",
+        "to": "cairo_war",
+        "time_min": 8,
+        "type": "highway",
+        "lanes": 6
+      },
+      {
+        "from": "cairo_war",
+        "to": "industrial_city",
+        "time_min": 6,
+        "type": "highway",
+        "lanes": 4
+      },
+      {
+        "from": "cairo_war",
+        "to": "delta_center",
+        "time_min": 12,
+        "type": "highway",
+        "lanes": 6
+      },
+      {
+        "from": "delta_center",
+        "to": "delta_towns",
+        "time_min": 5,
+        "type": "wide_road",
+        "lanes": 4
+      },
+      {
+        "from": "delta_towns",
+        "to": "industrial_city",
+        "time_min": 10,
+        "type": "industrial_road",
+        "lanes": 4
+      },
+      {
+        "from": "industrial_city",
+        "to": "east_port",
+        "time_min": 15,
+        "type": "coastal_road",
+        "lanes": 4
+      },
+      {
+        "from": "east_port",
+        "to": "tourist_resort",
+        "time_min": 8,
+        "type": "corniche",
+        "lanes": 4
+      },
+      {
+        "from": "tourist_resort",
+        "to": "ash_stronghold",
+        "time_min": 15,
+        "type": "mountain_road",
+        "lanes": 2,
+        "tunnels": 3
+      },
+      {
+        "from": "ash_stronghold",
+        "to": "highland_villages",
+        "time_min": 10,
+        "type": "mountain_road",
+        "lanes": 2
+      },
+      {
+        "from": "highland_villages",
+        "to": "dark_fort",
+        "time_min": 18,
+        "type": "desert_road",
+        "lanes": 2
+      },
+      {
+        "from": "cairo_war",
+        "to": "siwa_oasis",
+        "time_min": 18,
+        "type": "desert_highway",
+        "lanes": 2
+      },
+      {
+        "from": "siwa_oasis",
+        "to": "desert_base",
+        "time_min": 12,
+        "type": "military_road",
+        "lanes": 2
+      },
+      {
+        "from": "desert_base",
+        "to": "dark_fort",
+        "time_min": 20,
+        "type": "supply_line",
+        "lanes": 2,
+        "vulnerable": true
+      },
+      {
+        "from": "dark_fort",
+        "to": "defense_line",
+        "time_min": 8,
+        "type": "fortified_road",
+        "lanes": 4
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "cp_north_delta",
+        "pos": [
+          5500,
+          3500
+        ],
+        "controls": [
+          "north_front",
+          "delta_ops"
+        ]
+      },
+      {
+        "id": "cp_desert_junction",
+        "pos": [
+          3000,
+          7000
+        ],
+        "controls": [
+          "western_desert",
+          "southern_depth"
+        ]
+      },
+      {
+        "id": "cp_coast_heights",
+        "pos": [
+          12500,
+          6000
+        ],
+        "controls": [
+          "sea_coast",
+          "eastern_heights"
+        ]
+      }
+    ]
+  },
+  "rivers": 12,
+  "building_types": {
+    "GLASS_TOWER_10_30": {
+      "floors": [
+        10,
+        30
+      ],
+      "enterable": "full_all_floors",
+      "cover": 0.2,
+      "visibility": 1.5,
+      "sniper_bonus": 0.5,
+      "material": "glass_reflective",
+      "destruction_stages": 4
+    },
+    "MALL": {
+      "floors": [
+        2,
+        4
+      ],
+      "enterable": "2_floors_plus_roof",
+      "cover": 0.4,
+      "loot": "supplies",
+      "destruction_stages": 3
+    },
+    "SHOP_RESTAURANT": {
+      "floors": [
+        1,
+        2
+      ],
+      "enterable": "ground_plus_storage",
+      "cover": 0.6,
+      "ambush_bonus": 0.4,
+      "destruction_stages": 2
+    },
+    "BANK_OFFICE": {
+      "floors": [
+        5,
+        15
+      ],
+      "enterable": "office_floors_fortifiable",
+      "cover": 0.5,
+      "intel_bonus": "documents",
+      "destruction_stages": 3
+    },
+    "HOSPITAL": {
+      "floors": [
+        4,
+        8
+      ],
+      "enterable": "full_plus_basement",
+      "cover": 0.7,
+      "medic_bonus": true,
+      "destruction_stages": 4
+    },
+    "SCHOOL": {
+      "floors": [
+        2,
+        4
+      ],
+      "enterable": "classrooms_plus_roof",
+      "cover": 0.6,
+      "civilian_spawn": "kids_teachers",
+      "destruction_stages": 3
+    },
+    "GAS_STATION": {
+      "floors": [
+        1,
+        1
+      ],
+      "enterable": "shop_plus_tanks_explosive",
+      "cover": 0.1,
+      "fuel": true,
+      "explosion_radius": 80,
+      "destruction_stages": 1
+    },
+    "PARKING_GARAGE": {
+      "floors": [
+        3,
+        6
+      ],
+      "enterable": "multi_level",
+      "cover": "vehicles",
+      "destruction_stages": 2
+    },
+    "RESIDENTIAL_HIGH": {
+      "floors": [
+        15,
+        35
+      ],
+      "enterable": "apartments",
+      "cover": 0.5,
+      "destruction_stages": 3
+    },
+    "RESIDENTIAL_LOW": {
+      "floors": [
+        1,
+        3
+      ],
+      "enterable": "villa",
+      "cover": 0.5,
+      "destruction_stages": 2
+    },
+    "GOV_BUILDING": {
+      "floors": [
+        3,
+        6
+      ],
+      "enterable": "full_fortified",
+      "cover": 0.6,
+      "hq_bonus": true,
+      "destruction_stages": 4
+    },
+    "WAREHOUSE_FACTORY": {
+      "floors": [
+        1,
+        3
+      ],
+      "enterable": "open_space",
+      "cover": "crates_machines",
+      "production": "ammo",
+      "destruction_stages": 3
+    }
+  }
+}
