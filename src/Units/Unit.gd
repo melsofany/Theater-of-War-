@@ -56,8 +56,12 @@ var sight_range: float = 25.0
 @onready var health_bar: MeshInstance3D = $HealthBar
 @onready var visual_model: Node3D = $VisualModel
 
+var _aura_ring: MeshInstance3D = null
+var _aura_mat: StandardMaterial3D = null
+
 
 func _ready() -> void:
+	_setup_quantum_aura()
 	if unit_type == null and UnitFactory:
 		unit_type = UnitFactory.get_type("infantry")
 	_update_visuals()
@@ -109,9 +113,41 @@ func set_selected(value: bool) -> void:
 	_update_visuals()
 
 
+func _setup_quantum_aura() -> void:
+	if _aura_ring != null:
+		return
+	_aura_ring = MeshInstance3D.new()
+	_aura_ring.name = "QuantumAura"
+	var torus := TorusMesh.new()
+	torus.inner_radius = radius * 0.95
+	torus.outer_radius = radius * 1.25
+	_aura_ring.mesh = torus
+	_aura_ring.position = Vector3(0, 0.04, 0)
+	_aura_ring.cast_shadow = 0
+
+	_aura_mat = StandardMaterial3D.new()
+	_aura_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_aura_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var base_c := faction.color if faction else Color(0.0, 0.85, 1.0)
+	_aura_mat.albedo_color = Color(base_c.r, base_c.g, base_c.b, 0.45)
+	_aura_ring.material_override = _aura_mat
+	add_child(_aura_ring)
+
+
 func _update_visuals() -> void:
 	if selection_ring:
 		selection_ring.visible = selected
+		if selected:
+			var s_mat := StandardMaterial3D.new()
+			s_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			s_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			s_mat.albedo_color = Color(0.0, 0.95, 1.0, 0.9)
+			selection_ring.material_override = s_mat
+
+	if _aura_mat and faction:
+		var fc := faction.color
+		_aura_mat.albedo_color = Color(fc.r, fc.g, fc.b, 0.45 * readiness)
+
 	if body_mesh and faction:
 		var mat := body_mesh.get_surface_override_material(0) as StandardMaterial3D
 		if mat:
@@ -472,9 +508,46 @@ func _fire(other: Unit) -> void:
 		return
 	supply = maxf(supply - ammo_per_shot, 0.0)
 	_play_fire_sfx()
+	_spawn_plasma_tracer(other)
 	var raw: float = unit_type.damage * compute_readiness()
 	var dmg: float = Balance.scaled_damage(raw) if Balance else raw
 	other.take_damage(dmg)
+
+
+func _spawn_plasma_tracer(target_unit: Unit) -> void:
+	if target_unit == null or not is_instance_valid(target_unit):
+		return
+	var parent_node := get_parent()
+	if parent_node == null:
+		return
+	var beam := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	var from_pos := global_position + Vector3(0, 0.8, 0)
+	var to_pos := target_unit.global_position + Vector3(0, 0.8, 0)
+	var dist := from_pos.distance_to(to_pos)
+	if dist < 0.1:
+		return
+	box.size = Vector3(0.08, 0.08, dist)
+	beam.mesh = box
+
+	var b_mat := StandardMaterial3D.new()
+	b_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	b_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	b_mat.albedo_color = Color(0.1, 0.95, 1.0, 0.95)
+	beam.material_override = b_mat
+	parent_node.add_child(beam)
+
+	var mid_pos := (from_pos + to_pos) * 0.5
+	if not mid_pos.is_equal_approx(to_pos):
+		beam.look_at_from_position(mid_pos, to_pos, Vector3.UP)
+	else:
+		beam.global_position = mid_pos
+
+	# Auto-destroy beam after brief flash
+	var t := parent_node.create_tween()
+	if t:
+		t.tween_property(b_mat, "albedo_color:a", 0.0, 0.15)
+		t.tween_callback(beam.queue_free)
 
 
 func _play_fire_sfx() -> void:

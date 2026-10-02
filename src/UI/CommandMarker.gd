@@ -13,7 +13,9 @@ class_name CommandMarker
 
 var _t: float = 0.0
 var _mesh: MeshInstance3D
+var _inner_mesh: MeshInstance3D
 var _mat: StandardMaterial3D
+var _inner_mat: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -22,12 +24,24 @@ func _ready() -> void:
 	_mesh.cast_shadow = 0  # GeometryInstance3D.ShadowCastingSetting.OFF
 	_mat = StandardMaterial3D.new()
 	_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_mat.albedo_color = Color(0.5, 0.85, 1.0, 0.9)
+	_mat.albedo_color = Color(0.0, 0.95, 1.0, 0.95)
 	_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_mat.no_depth_test = true
 	_mesh.material_override = _mat
 	_mesh.rotation_degrees.x = 90.0
 	add_child(_mesh)
+
+	_inner_mesh = MeshInstance3D.new()
+	_inner_mesh.mesh = TorusMesh.new()
+	_inner_mesh.cast_shadow = 0
+	_inner_mat = StandardMaterial3D.new()
+	_inner_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_inner_mat.albedo_color = Color(0.85, 0.2, 1.0, 0.9)
+	_inner_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_inner_mat.no_depth_test = true
+	_inner_mesh.material_override = _inner_mat
+	_inner_mesh.rotation_degrees.x = 90.0
+	add_child(_inner_mesh)
 
 
 func play_at(pos: Vector3) -> void:
@@ -42,8 +56,16 @@ func _process(delta: float) -> void:
 	var r: float = lerpf(start_radius, end_radius, p)
 	var torus := _mesh.mesh as TorusMesh
 	if torus:
-		torus.inner_radius = r * 0.7
+		torus.inner_radius = r * 0.78
 		torus.outer_radius = r
-	_mat.albedo_color.a = lerpf(0.9, 0.0, p)
+	var inner_torus := _inner_mesh.mesh as TorusMesh
+	if inner_torus:
+		var r_in := lerpf(start_radius * 0.5, end_radius * 0.65, p)
+		inner_torus.inner_radius = r_in * 0.6
+		inner_torus.outer_radius = r_in
+
+	_mat.albedo_color = Color(0.0, 0.95, 1.0, lerpf(0.95, 0.0, p))
+	_inner_mat.albedo_color = Color(0.85, 0.2, 1.0, lerpf(0.9, 0.0, p))
+
 	if _t >= duration:
 		queue_free()
