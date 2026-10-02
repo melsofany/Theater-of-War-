@@ -28,6 +28,7 @@ var _mesh_instance: MeshInstance3D
 var _body: StaticBody3D
 var _water_mesh: MeshInstance3D
 var _road_mesh: MeshInstance3D
+var _higgs_overlay: HiggsFieldOverlay = null
 
 
 func _ready() -> void:
@@ -52,13 +53,14 @@ func _build_terrain() -> void:
 	_ground_mat = StandardMaterial3D.new()
 	_ground_mat.vertex_color_use_as_albedo = true
 	_ground_mat.roughness = 0.95
-	_ground_mat.metalness = 0.0
+	_ground_mat.metallic = 0.0
 	if streaming:
 		_build_streaming_ground()
 	else:
 		_build_ground()
 	_build_water()
 	_build_roads()
+	_build_higgs_overlay()
 
 
 func _build_streaming_ground() -> void:
@@ -239,9 +241,12 @@ func _build_water() -> void:
 	wmat.roughness_texture = _load_texture("res://assets/textures/terrain/water_roughness.png")
 
 	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	wmat.albedo_color = Color(0.28, 0.55, 0.82, 0.82)
-	wmat.roughness = 0.18
-	wmat.metallic = 0.12
+	wmat.albedo_color = Color(0.12, 0.68, 0.92, 0.85)
+	wmat.roughness = 0.12
+	wmat.metallic = 0.25
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.05, 0.25, 0.45)
+	wmat.emission_energy_multiplier = 0.6
 	wmat.uv1_scale = Vector3(4.0, 4.0, 4.0)
 	_water_mesh.material_override = wmat
 	add_child(_water_mesh)
@@ -288,6 +293,15 @@ func _build_roads() -> void:
 	rmat.uv1_scale = Vector3(5.0, 5.0, 5.0)
 	_road_mesh.material_override = rmat
 	add_child(_road_mesh)
+
+
+func _build_higgs_overlay() -> void:
+	if map_data == null:
+		return
+	_higgs_overlay = HiggsFieldOverlay.new()
+	_higgs_overlay.name = "HiggsFieldOverlay"
+	add_child(_higgs_overlay)
+	_higgs_overlay.set_map_data(map_data)
 
 
 func _load_texture(path: String) -> Texture2D:

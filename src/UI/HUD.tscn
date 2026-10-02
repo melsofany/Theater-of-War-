@@ -22,7 +22,8 @@ offset_bottom = 120.0
 grow_horizontal = 0
 
 [node name="Label" type="Label" parent="VBox"]
-text = "Theater of War — Prototype
+theme_override_colors/font_color = Color(0.2, 0.9, 1.0, 1)
+text = "Theater of War — Higgs Field Edition
 LMB: select/box   RMB: move
 WASD/edges: pan   Wheel: zoom
 Ctrl+1..9: group   1..9: recall
@@ -30,6 +31,7 @@ V: command node   [ / ]: up/down echelon
 B: build   Y: rally   H: focus"
 
 [node name="CountLabel" type="Label" parent="VBox"]
+theme_override_colors/font_color = Color(0.85, 0.45, 1.0, 1)
 text = "Selected units: 0"
 
 [node name="CommandLabel" type="Label" parent="VBox"]
